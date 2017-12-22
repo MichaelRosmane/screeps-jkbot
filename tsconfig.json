@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     "module": "commonjs",
-    "target": "es5",
+    "target": "es6",
     "outDir": "dist",
     "baseUrl": "src/",
     "sourceMap": true,
@@ -15,7 +15,15 @@
       "typed-screeps"
     ]
   },
+  "include": [
+    "nether-os/**/*.ts",
+    "nether-os/**/*.d.ts"
+  ],
   "exclude": [
-    "node_modules"
+    "dist",
+    "node_modules",
+    "src/snippets",
+    "arcath-arcos",
+    "arcai2"
   ]
 }
