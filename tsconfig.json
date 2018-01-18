@@ -1,9 +1,9 @@
 {
   "compilerOptions": {
     "module": "commonjs",
-    "target": "es6",
+    "target": "es5",
     "outDir": "dist",
-    "baseUrl": "src/",
+    "baseUrl": "jkbot/",
     "sourceMap": true,
     "strict": true,
     "experimentalDecorators": true,
@@ -12,18 +12,11 @@
     "allowUnreachableCode": false,
     "types": [
       "lodash",
-      "typed-screeps"
+      "typed-screeps",
+      "node"
     ]
   },
-  "include": [
-    "nether-os/**/*.ts",
-    "nether-os/**/*.d.ts"
-  ],
   "exclude": [
-    "dist",
-    "node_modules",
-    "src/snippets",
-    "arcath-arcos",
-    "arcai2"
+    "node_modules"
   ]
 }
