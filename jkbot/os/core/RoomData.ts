@@ -1,5 +1,4 @@
-import { RoomDataSources, SerializedRoomData, SourceObjectInfo, SpawnObjectInfo } from "../../typings";
-import { loadavg } from "os";
+import { Point, RoomDataSources, SerializedRoomData, SourceObjectInfo, SpawnObjectInfo } from "../../typings";
 
 export class RoomData {
   public sources: RoomDataSources = {};
@@ -7,6 +6,8 @@ export class RoomData {
   public rcl: number;
   public name: string;
   public builders: number = 0;
+  public baseStartPoint: Point;
+  public baseEndPoint: Point;
 
   constructor(entry: SerializedRoomData) {
     let roomData = this;

@@ -1,7 +1,7 @@
-import { Process } from "os/core/Process";
+import { CreepActionProcess } from "os/core/CreepActionProcess";
 import { MetaData } from "typings";
 
-export class HarvestProcess extends Process {
+export class HarvestProcess extends CreepActionProcess {
 
   public type = "harvest";
 
@@ -12,19 +12,20 @@ export class HarvestProcess extends Process {
     let target = this.metaData.target;
 
     if (!creep) {
-        this.completed = true;
+        this.markAsCompleted();
         return;
     }
 
     let source: Source | Mineral<MineralConstant> | null = Game.getObjectById(target.id);
 
     if (!source) {
-        // TODO what if invalid source ?
+      this.log("Invalid source point set", "error");
+      this.markAsCompleted();
     } else {
         if (_.sum(creep.carry) < creep.carryCapacity) {
             creep.harvest(source);
         } else {
-            this.completed = true;
+            this.markAsCompleted();
         }
     }
   }

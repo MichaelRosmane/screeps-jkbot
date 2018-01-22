@@ -1,21 +1,24 @@
-import { Process } from "os/core/Process";
+import { CreepActionProcess } from "os/core/CreepActionProcess";
 import { PathingHelper } from "os/helpers/PathingHelper";
 import { MetaData } from "typings";
 
-export class MoveProcess extends Process {
+export class MoveProcess extends CreepActionProcess {
   public type = "move";
 
   public metaData: MetaData["move"];
 
+  private movements = [TOP_LEFT, TOP, TOP_RIGHT, BOTTOM_LEFT, BOTTOM, BOTTOM_RIGHT, LEFT, RIGHT];
+
   public run(): void {
     let nextStep: RoomPosition;
-    let fullPath: RoomPosition[];
+    let fullPath: PathStep[];
     let creep = Game.creeps[this.metaData.creepName];
     let removeFirst = false;
     let range: number;
+    let room = Game.rooms[this.metaData.roomName];
 
-    if (!creep) {
-      this.completed = true;
+    if (!creep || !room) {
+      this.markAsCompleted();
       return;
     }
 
@@ -35,20 +38,25 @@ export class MoveProcess extends Process {
         this.metaData.previousPositionY = NaN;
         this.metaData.stuck = 0;
 
-        fullPath = PathFinder.search(creep.pos, {pos: targetPos, range}).path;
+        fullPath = room.findPath(creep.pos, targetPos, {ignoreCreeps: true, range});
     } else {
-        fullPath = PathingHelper.deserializePath(this.metaData.path);
+        fullPath = Room.deserializePath(this.metaData.path);
     }
 
-    if (fullPath.length > 0) {
-        nextStep = fullPath[0];
+    if (this.metaData.stuck > 4) {
+      this.log("Im really stuck", "error");
 
-        if (creep.move(creep.pos.getDirectionTo(nextStep)) === OK) {
-            removeFirst = true;
-            this.metaData.path = PathingHelper.serializePath(fullPath, removeFirst);
+      this.metaData.path = "";
+      this.metaData.stuck = 0;
+      let unstuck = creep.moveTo(this.metaData.target.x, this.metaData.target.y);
+    } else if (fullPath.length > 0) {
+
+        if (creep.moveByPath(fullPath) === OK) {
+            this.metaData.path = Room.serializePath(fullPath);
         }
+
     } else {
-        this.completed = true;
+        this.markAsCompleted();
     }
   }
 
@@ -59,16 +67,10 @@ export class MoveProcess extends Process {
    */
   private checkWithPreviousPosition(currentX: number, currentY: number) {
     if (this.metaData.previousPositionX === currentX && this.metaData.previousPositionY === currentY) {
-        this.log("Im stuck");
-        this.metaData.stuck ++;
+      this.metaData.stuck ++;
     } else {
-        this.metaData.previousPositionX = currentX;
-        this.metaData.previousPositionY = currentY;
-    }
-
-    if (this.metaData.stuck > 4) {
-        this.metaData.path = "";
-        this.metaData.stuck = 0;
+      this.metaData.previousPositionX = currentX;
+      this.metaData.previousPositionY = currentY;
     }
   }
 }

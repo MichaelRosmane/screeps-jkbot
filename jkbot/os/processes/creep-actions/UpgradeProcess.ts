@@ -1,7 +1,7 @@
-import { Process } from "os/core/Process";
+import { CreepActionProcess } from "os/core/CreepActionProcess";
 import { MetaData } from "typings";
 
-export class UpgradeProcess extends Process {
+export class UpgradeProcess extends CreepActionProcess {
 
   public type = "upgrade";
 
@@ -12,14 +12,14 @@ export class UpgradeProcess extends Process {
     let room = Game.rooms[this.metaData.roomName];
 
     if (!creep || !room || !room.controller) {
-        this.completed = true;
+        this.markAsCompleted();
         return;
     }
 
     if (_.sum(creep.carry) > 0) {
       creep.upgradeController(room.controller);
     } else {
-      this.completed = true;
+      this.markAsCompleted();
     }
   }
 }

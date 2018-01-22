@@ -133,6 +133,14 @@ export abstract class Process {
       return this.kernel.getRoomDataByName(name);
     }
 
+    public ensureRoomDataExists() {
+      if (!this.roomData) {
+        this.roomData = this.getRoomData(this.metaData.roomName);
+      }
+
+      return this.roomData;
+    }
+
     public cleanUp(): void {
       if (this.roomData) {
         this.kernel.updateRoomData(this.roomData);

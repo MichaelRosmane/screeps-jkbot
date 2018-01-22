@@ -149,7 +149,7 @@ interface SerializedProcess {
   name: string;
   priority: number;
   metaData: object;
-  type: string;
+  type: ProcessTypes;
   suspend: string | number | boolean;
   parent: string;
 }

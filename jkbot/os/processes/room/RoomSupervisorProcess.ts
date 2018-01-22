@@ -10,13 +10,11 @@ export class RoomSupervisorProcess extends Process {
 
   public run() {
 
-    if (Game.time % 50 === 0) {
-      let room = Game.rooms[this.metaData.roomName];
-      let roomData = this.getRoomData(this.metaData.roomName);
+    let room = Game.rooms[this.metaData.roomName];
+    let roomData = this.getRoomData(this.metaData.roomName);
 
-      if (room && roomData && room.controller) {
-        roomData.rcl = room.controller.level;
-      }
+    if (room && roomData && room.controller) {
+      roomData.rcl = room.controller.level;
     }
 
     // --------------------------------------------------------------------------------- generating room data processes

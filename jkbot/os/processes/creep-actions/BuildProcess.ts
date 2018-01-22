@@ -1,7 +1,7 @@
-import { Process } from "os/core/Process";
+import { CreepActionProcess } from "os/core/CreepActionProcess";
 import { MetaData } from "typings";
 
-export class BuildProcess extends Process {
+export class BuildProcess extends CreepActionProcess {
 
   public type = "build";
 
@@ -12,24 +12,25 @@ export class BuildProcess extends Process {
     let room = Game.rooms[this.metaData.roomName];
 
     if (!creep || !room || !this.metaData.target) {
-        this.completed = true;
+        this.markAsCompleted();
         return;
     }
 
     if (_.sum(creep.carry) > 0) {
       let site: ConstructionSite | null = Game.getObjectById(this.metaData.target.id);
 
-      if (site) {
+      if (site && site.id && site.id !== "") {
         let result = creep.build(site);
 
         if (result !== OK) {
-          this.completed = true;
+          this.markAsCompleted();
         }
       } else {
-        this.completed = true;
+        this.log("Invalid construction site received - terminating process", "error");
+        this.markAsCompleted();
       }
     } else {
-      this.completed = true;
+      this.markAsCompleted();
     }
   }
 }

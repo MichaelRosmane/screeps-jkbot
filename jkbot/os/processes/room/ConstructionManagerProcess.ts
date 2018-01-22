@@ -1,6 +1,6 @@
 import { Constants } from "os/core/Constants";
 import { Rcl2Constructions } from "os/helpers/construction/Rcl2Constructions";
-import { BasicObjectInfo, MetaData, Point, WeightedPoint, ConstructionList } from "../../../typings";
+import { BasicObjectInfo, ConstructionList, MetaData, Point, WeightedPoint } from "../../../typings";
 import { Process } from "../../core/Process";
 import { SpawnManagerProcess } from "./SpawnManagerProcess";
 
@@ -19,7 +19,9 @@ export class ConstructionManagerProcess extends Process {
 
   private sites: ConstructionSite[];
 
-  private buildingPriorities = ["container", "extension", "road"];
+  private buildingPriorities = {
+    rcl2: [STRUCTURE_CONTAINER, STRUCTURE_EXTENSION, STRUCTURE_CONTAINER]
+  };
 
   public run() {
     this.room = Game.rooms[this.metaData.roomName];
@@ -29,12 +31,34 @@ export class ConstructionManagerProcess extends Process {
     this.checkControllerWallSites();
     this.placeConstructionSitesForBase();
 
+    // this.buildRoadsToSources();
+
     // this.roomMap = this.generateMap();
     // this.lookForSuitableSpot();
   }
 
   public getConstructionSite(): BasicObjectInfo {
+
+    if (!this.roomData) {
+      this.roomData = this.getRoomData(this.metaData.roomName);
+    }
+
+    let rcl = this.roomData.rcl;
     let site = this.sites.shift();
+
+    if (rcl === 2) {
+      let containerIndex = _.findIndex(this.sites, function(constructionSite) {
+        return constructionSite.structureType === STRUCTURE_CONTAINER;
+      });
+
+      this.log("index: " + containerIndex );
+
+      if (containerIndex) {
+         site = this.sites[containerIndex];
+      }
+
+    }
+
     if (site) {
 
       this.log("construction site id:" + site.id, "error");
@@ -212,12 +236,91 @@ export class ConstructionManagerProcess extends Process {
       this.roomData = this.getRoomData(this.metaData.roomName);
     }
 
+    if (!this.roomData.baseStartPoint) {
+      this.roomData.baseStartPoint = {
+        x: this.roomData.spawns[0].x - 6,
+        y: this.roomData.spawns[0].y
+      };
+
+      this.roomData.baseEndPoint = {
+        x: this.roomData.spawns[0].x - 6 + 13,
+        y: this.roomData.spawns[0].y + 13
+      };
+    }
+
     let buildings: ConstructionList | boolean = false;
-    switch(this.roomData.rcl) {
+    switch (this.roomData.rcl) {
       case 2:
         buildings = Rcl2Constructions;
         break;
     }
+
+    if (buildings) {
+      this.createConstructionSitesForBuildings(buildings, this.roomData.baseStartPoint);
+    } else {
+      this.log("no buildings ? rcl = " + this.roomData.rcl, "error");
+    }
+  }
+
+  private createConstructionSitesForBuildings(buildings: ConstructionList, base: Point) {
+
+    if (!this.room) {
+      return;
+    }
+
+    let room = this.room;
+
+    if (buildings.container) {
+      _.forEach(buildings.container, function(location: Point) {
+        room.createConstructionSite(base.x + location.x, base.y + location.y, STRUCTURE_CONTAINER);
+      });
+    }
+
+    if (buildings.extension) {
+      _.forEach(buildings.extension, function(location: Point) {
+        room.createConstructionSite(base.x + location.x, base.y + location.y, STRUCTURE_EXTENSION);
+      });
+    }
+
+    if (buildings.road) {
+      _.forEach(buildings.road, function(location: Point) {
+        room.createConstructionSite(base.x + location.x, base.y + location.y, STRUCTURE_ROAD);
+      });
+    }
+  }
+
+  private buildRoadsToSources() {
+    this.roomData = this.ensureRoomDataExists();
+    let room = this.room;
+
+    let visual = new RoomVisual(room.name);
+
+    let base = this.roomData.baseStartPoint;
+    let end = this.roomData.baseEndPoint;
+
+    this.log("base => x: " + base.x + " y: " + base.y, "error");
+    this.log("end => x: " + end.x + " y: " + end.y, "error");
+
+    visual.rect(base.x, base.y, 13, 13, {fill: "transparent", stroke: "#f00"});
+
+    _.forEach(this.roomData.sources, function(source) {
+      let path = room.findPath(
+        new RoomPosition(base.x + 6, base.y + 6, room.name),
+        new RoomPosition(source.x, source.y, room.name),
+        {
+          ignoreCreeps: true,
+          range: 1
+        }
+      );
+
+      _.forEach(path, function(part) {
+        visual.text("r", part.x, part.y);
+        if ( (part.x < base.x || part.x > end.x) && (part.y < base.y || part.y > end.y)  ) {
+          visual.text("R", part.x, part.y);
+        }
+
+      });
+    });
   }
 
 }

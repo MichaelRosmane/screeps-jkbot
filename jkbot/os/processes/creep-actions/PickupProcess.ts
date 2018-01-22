@@ -1,7 +1,7 @@
-import { Process } from "os/core/Process";
+import { CreepActionProcess } from "os/core/CreepActionProcess";
 import { MetaData } from "typings";
 
-export class PickupProcess extends Process {
+export class PickupProcess extends CreepActionProcess {
   public type = "pickup";
 
   public metaData: MetaData["pickup"];
@@ -12,13 +12,13 @@ export class PickupProcess extends Process {
     let target = this.metaData.target;
 
     if (!creep) {
-        this.completed = true;
+        this.markAsCompleted();
         return;
     }
 
     if (!target) {
       this.log("Invalid target point set", "error");
-      this.completed = true;
+      this.markAsCompleted();
     } else {
         let targetStructure: Structure | null = Game.getObjectById(target.id);
 
@@ -29,7 +29,7 @@ export class PickupProcess extends Process {
         }
     }
 
-    this.completed = true;
+    this.markAsCompleted();
   }
 
 }

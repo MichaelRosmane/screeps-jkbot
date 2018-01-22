@@ -1,7 +1,7 @@
-import { Process } from "os/core/Process";
+import { CreepActionProcess } from "os/core/CreepActionProcess";
 import { MetaData } from "typings";
 
-export class DepositProcess extends Process {
+export class DepositProcess extends CreepActionProcess {
   public type = "deposit";
 
   public metaData: MetaData["deposit"];
@@ -12,13 +12,13 @@ export class DepositProcess extends Process {
     let dropOffInfo = this.metaData.dropOff;
 
     if (!creep) {
-        this.completed = true;
+        this.markAsCompleted();
         return;
     }
 
     if (!dropOffInfo) {
       this.log("Invalid drop off point set", "error");
-      this.completed = true;
+      this.markAsCompleted();
     } else {
         let dropOff: Structure | null = Game.getObjectById(dropOffInfo.id);
 
@@ -27,7 +27,7 @@ export class DepositProcess extends Process {
         }
     }
 
-    this.completed = true;
+    this.markAsCompleted();
   }
 
 }
