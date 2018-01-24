@@ -64,6 +64,8 @@ export class Kernel {
             Memory.jkbot = {};
         }
 
+        this.log("init kernel", "running constructor");
+
         this.setCpuLimit();
         this.loadProcessTable();
         this.loadRoomDataTable();

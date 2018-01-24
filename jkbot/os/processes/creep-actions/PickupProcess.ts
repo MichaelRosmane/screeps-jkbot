@@ -19,14 +19,14 @@ export class PickupProcess extends CreepActionProcess {
     if (!target) {
       this.log("Invalid target point set", "error");
       this.markAsCompleted();
-    } else {
-        let targetStructure: Structure | null = Game.getObjectById(target.id);
+      return;
+    }
 
-        if (targetStructure) {
+    let targetStructure: Structure | null = Game.getObjectById(target.id);
 
-          let result = creep.withdraw(targetStructure, RESOURCE_ENERGY);
-          this.log("trying to withdraw: " + result, "error");
-        }
+    if (targetStructure) {
+      let result = creep.withdraw(targetStructure, RESOURCE_ENERGY);
+      this.log("trying to withdraw: " + result, "error");
     }
 
     this.markAsCompleted();

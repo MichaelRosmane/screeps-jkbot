@@ -46,19 +46,6 @@ export class ConstructionManagerProcess extends Process {
     let rcl = this.roomData.rcl;
     let site = this.sites.shift();
 
-    if (rcl === 2) {
-      let containerIndex = _.findIndex(this.sites, function(constructionSite) {
-        return constructionSite.structureType === STRUCTURE_CONTAINER;
-      });
-
-      this.log("index: " + containerIndex );
-
-      if (containerIndex) {
-         site = this.sites[containerIndex];
-      }
-
-    }
-
     if (site) {
 
       this.log("construction site id:" + site.id, "error");
@@ -257,8 +244,6 @@ export class ConstructionManagerProcess extends Process {
 
     if (buildings) {
       this.createConstructionSitesForBuildings(buildings, this.roomData.baseStartPoint);
-    } else {
-      this.log("no buildings ? rcl = " + this.roomData.rcl, "error");
     }
   }
 
