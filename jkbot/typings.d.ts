@@ -1,5 +1,5 @@
 import { Process } from './os/core/Process';
-import { RoomData } from "./os/core/RoomData"
+import { RoomData } from "./os/core/RoomData";
 
 // -------------------------------------------------------------------------------------------------------------- Types
 type ProcessTypes =

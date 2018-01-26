@@ -1,4 +1,4 @@
-import { CreepActionProcess } from "os/core/CreepActionProcess";
+import { CreepActionProcess } from "os/processes/CreepActionProcess";
 import { MetaData } from "typings";
 
 export class DepositProcess extends CreepActionProcess {

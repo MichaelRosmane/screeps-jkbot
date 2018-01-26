@@ -15,7 +15,8 @@ export class SpawnHelper {
       base: [WORK, CARRY, MOVE],
       baseCost: 200,
       extension: [CARRY, MOVE],
-      extensionCost: 100
+      extensionCost: 100,
+      maxExtensionCount: 2
     }
   };
 

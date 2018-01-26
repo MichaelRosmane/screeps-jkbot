@@ -1,4 +1,4 @@
-import { CreepActionProcess } from "os/core/CreepActionProcess";
+import { CreepActionProcess } from "os/processes/CreepActionProcess";
 import { MetaData } from "typings";
 
 export class PickupProcess extends CreepActionProcess {
@@ -17,7 +17,6 @@ export class PickupProcess extends CreepActionProcess {
     }
 
     if (!target) {
-      this.log("Invalid target point set", "error");
       this.markAsCompleted();
       return;
     }
@@ -26,10 +25,13 @@ export class PickupProcess extends CreepActionProcess {
 
     if (targetStructure) {
       let result = creep.withdraw(targetStructure, RESOURCE_ENERGY);
-      this.log("trying to withdraw: " + result, "error");
     }
 
-    this.markAsCompleted();
+    if (_.sum(creep.carry) < creep.carryCapacity) {
+      this.suspend = 2;
+    } else {
+      this.markAsCompleted();
+    }
   }
 
 }

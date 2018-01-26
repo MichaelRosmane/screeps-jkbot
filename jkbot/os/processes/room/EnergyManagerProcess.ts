@@ -49,10 +49,16 @@ export class EnergyManagementProcess extends Process {
     });
   }
 
-  public getPickUpPoint(): BasicObjectInfo {
+  public getPickUpPoint(): BasicObjectInfo | boolean {
+
+    let room = Game.rooms[this.metaData.roomName];
 
     if (!this.roomData) {
       this.roomData = this.getRoomData(this.metaData.roomName);
+    }
+
+    if (room.energyAvailable <= 250) {
+      return false;
     }
 
     if (this.roomData.rcl === 1) {

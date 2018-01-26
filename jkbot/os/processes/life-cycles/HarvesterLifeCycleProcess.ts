@@ -1,5 +1,6 @@
-import { LifeCycleProcess } from "os/core/LifeCycleProcess";
 import { Process } from "os/core/Process";
+import { LifeCycleProcess } from "os/processes/LifeCycleProcess";
+import { ConstructionManagerProcess } from "os/processes/room/ConstructionManagerProcess";
 import { EnergyManagementProcess } from "os/processes/room/EnergyManagerProcess";
 import { BasicObjectInfo, MetaData } from "typings";
 import { Constants } from "../../core/Constants";
@@ -15,6 +16,10 @@ export class HarvesterLifeCycleProcess extends LifeCycleProcess {
     let creep = Game.creeps[this.metaData.creepName];
     let target = this.metaData.target;
     let room = Game.rooms[this.metaData.roomName];
+
+    let constructionManagerName = "constructionManager-" + this.metaData.roomName;
+
+    let constructionManager: ConstructionManagerProcess = this.kernel.getProcessByName(constructionManagerName)!;
 
     if (!this.roomData) {
       this.roomData = this.getRoomData(this.metaData.roomName);

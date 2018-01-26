@@ -81,7 +81,7 @@ export class ConstructionManagerProcess extends Process {
       spawnManager.addCreepToSpawnQue({
         meta: {},
         parentProcess: this.name,
-        priority: Constants.PRIORITY_LOW,
+        priority: Constants.PRIORITY_LOWEST,
         processToCreate: "builderLifeCycle",
         type: "builder"
       });

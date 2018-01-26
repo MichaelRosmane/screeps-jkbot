@@ -1,7 +1,7 @@
+import { LifeCycleProcess } from "os/processes/LifeCycleProcess";
 import { ConstructionManagerProcess } from "os/processes/room/ConstructionManagerProcess";
 import { EnergyManagementProcess } from "os/processes/room/EnergyManagerProcess";
 import { BasicObjectInfo, MetaData } from "typings";
-import { LifeCycleProcess } from "../../core/LifeCycleProcess";
 
 export class BuilderLifeCycleProcess extends LifeCycleProcess {
   public type = "builderLifeCycle";
