@@ -1,9 +1,7 @@
-import { MetaData, ProcessTypes, SerializedProcess } from "../../typings";
+import {ProcessTypes, SerializedProcess} from "../../typings";
 
-import { Constants } from "./Constants";
-import { Kernel } from "./Kernel";
-import { RoomData } from "os/core/RoomData";
-import { debug } from "util";
+import {RoomData} from "os/core/RoomData";
+import {Kernel} from "./Kernel";
 
 export abstract class Process {
     public completed: boolean = false;
@@ -46,9 +44,9 @@ export abstract class Process {
         }
 
         if (this.metaData.roomName) {
-          this.roomData = this.getRoomData(this.metaData.roomName);
+            this.roomData = this.getRoomData(this.metaData.roomName);
         } else {
-          this.roomData = false;
+            this.roomData = false;
         }
 
     }
@@ -130,20 +128,20 @@ export abstract class Process {
      * @returns {RoomData}
      */
     public getRoomData(name: string): RoomData {
-      return this.kernel.getRoomDataByName(name);
+        return this.kernel.getRoomDataByName(name);
     }
 
     public ensureRoomDataExists() {
-      if (!this.roomData) {
-        this.roomData = this.getRoomData(this.metaData.roomName);
-      }
+        if (!this.roomData) {
+            this.roomData = this.getRoomData(this.metaData.roomName);
+        }
 
-      return this.roomData;
+        return this.roomData;
     }
 
     public cleanUp(): void {
-      if (this.roomData) {
-        this.kernel.updateRoomData(this.roomData);
-      }
+        if (this.roomData) {
+            this.kernel.updateRoomData(this.roomData);
+        }
     }
 }

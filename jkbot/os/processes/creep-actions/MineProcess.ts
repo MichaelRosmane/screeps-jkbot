@@ -1,11 +1,11 @@
 import {CreepActionProcess} from "os/processes/CreepActionProcess";
 import {MetaData} from "typings";
 
-export class HarvestProcess extends CreepActionProcess {
+export class MineProcess extends CreepActionProcess {
 
-    public type = "harvest";
+    public type = "mine";
 
-    public metaData: MetaData["harvest"];
+    public metaData: MetaData["mine"];
 
     public run(): void {
         let creep = Game.creeps[this.metaData.creepName];
@@ -22,11 +22,7 @@ export class HarvestProcess extends CreepActionProcess {
             this.log("Invalid source point set", "error");
             this.markAsCompleted();
         } else {
-            if (_.sum(creep.carry) < creep.carryCapacity) {
-                creep.harvest(source);
-            } else {
-                this.markAsCompleted();
-            }
+            creep.harvest(source);
         }
     }
 

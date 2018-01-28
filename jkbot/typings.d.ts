@@ -1,112 +1,117 @@
-import { Process } from './os/core/Process';
-import { RoomData } from "./os/core/RoomData";
+import {Process} from "./os/core/Process";
+import {RoomData} from "./os/core/RoomData";
 
 // -------------------------------------------------------------------------------------------------------------- Types
 type ProcessTypes =
-"init"
-| "suspension"
-| "memoryManager"
-| "roomSupervisor"
-| "energyManager"
-| "spawnManager"
-| "constructionManager"
-| "staticRoomData"
-| "dynamicRoomData"
-| "constructionManager"
-| "harvesterLifeCycle"
-| "move"
-| "harvest"
-| "deposit"
-| "upgrade"
-| "builderLifeCycle"
-| "build"
-| "pickup";
+    "init"
+    | "suspension"
+    | "memoryManager"
+    | "roomSupervisor"
+    | "energyManager"
+    | "spawnManager"
+    | "constructionManager"
+    | "staticRoomData"
+    | "dynamicRoomData"
+    | "constructionManager"
+    | "harvesterLifeCycle"
+    | "move"
+    | "harvest"
+    | "deposit"
+    | "upgrade"
+    | "builderLifeCycle"
+    | "build"
+    | "pickup"
+    | "mine"
+    | "minerLifeCycle"
+    | "haulerLifeCycle";
 
-type RoomMetaData = {
-  roomName: string;
+// --------------------------------------------------------------------------------------------------------- Interfaces
+
+interface RoomMetaData {
+    roomName: string;
 }
 
-type CreepMetaData = {
-  creepName: string;
+interface CreepMetaData {
+    creepName: string;
 }
 
-type BasicObjectInfo = {
-  x: number;
-  y: number;
-  roomName: string;
-  id: string;
+interface BasicObjectInfo {
+    x: number;
+    y: number;
+    roomName: string;
+    id: string;
 }
 
-type SourceObjectInfo = BasicObjectInfo & {
-  isMinedBy: {
-    harvesters: number;
-    miners: number;
-  }
+interface SourceObjectInfo extends BasicObjectInfo {
+    isMinedBy: {
+        harvesters: number;
+        miners: number;
+        haulers: number;
+    };
 }
 
-type SpawnObjectInfo = BasicObjectInfo & {
-  spawning: boolean|number;
-  spawnName: string;
+interface SpawnObjectInfo extends BasicObjectInfo {
+    spawning: boolean | number;
+    spawnName: string;
 }
 
-type TargetMetaData = {
-  target: BasicObjectInfo;
+interface TargetMetaData {
+    target: BasicObjectInfo;
 }
 
-type DropOffMetaData = {
-  dropOff: BasicObjectInfo | undefined;
+interface DropOffMetaData {
+    dropOff: BasicObjectInfo | undefined;
 }
 
-type SpawnMetaData = {
-  spawnQue: CreepToSpawn[];
+interface SpawnMetaData {
+    spawnQue: CreepToSpawn[];
 }
 
 type PickupMetaData = RoomMetaData & CreepMetaData & TargetMetaData & {
-  resourceType: ResourceConstant;
+    resourceType: ResourceConstant;
+};
+
+interface CreepBaseType {
+    base: BodyPartConstant[];
+    baseCost: number;
+    extension?: BodyPartConstant[];
+    extensionCost?: number;
+    maxExtensionCount?: number;
 }
 
-type CreepBaseType = {
-  base: BodyPartConstant[];
-  baseCost: number;
-  extension?: BodyPartConstant[];
-  extensionCost?: number;
-  maxExtensionCount?: number;
+interface CreepConfig {
+    parts: BodyPartConstant[];
+    cost: number;
+    spawnTime: number;
 }
 
-type CreepConfig = {
-  parts: BodyPartConstant[]
-  cost: number;
-  spawnTime: number;
+interface MoveMetaData  extends RoomMetaData,  TargetMetaData, CreepMetaData {
+    path: string;
+    previousPositionX: number;
+    previousPositionY: number;
+    stuck: number;
+    range: number | undefined;
 }
 
-type MoveMetaData = RoomMetaData & TargetMetaData & CreepMetaData & {
-  path: string;
-  previousPositionX: number;
-  previousPositionY: number;
-  stuck: number;
-  range: number | undefined;
+interface CreepToSpawn {
+    type: string;
+    processToCreate: ProcessTypes;
+    parentProcess?: string;
+    priority: number;
+    meta?: any;
 }
 
-type CreepToSpawn = {
-  type: string;
-  processToCreate: ProcessTypes;
-  parentProcess?: string;
-  priority: number;
-  meta?: any;
+interface NextAction {
+    next: string;
 }
 
-type NextAction = {
-  next: string;
-}
-
-// --------------------------------------------------------------------------------------------------------- Interfaces
 interface Point {
-  x: number;
-  y: number;
+    x: number;
+    y: number;
 }
 
 interface WeightedPoint extends Point {
-  score: number;
+    score: number;
 }
 
 interface MessageLogItem {
@@ -117,57 +122,76 @@ interface MessageLogItem {
 }
 
 interface CreepTypes {
-  [name: string]: CreepBaseType;
+    [name: string]: CreepBaseType;
 }
 
 interface ProcessTable {
-  [name: string]: Process;
+    [name: string]: Process;
 }
 
 interface MetaData {
-  roomSupervisor: RoomMetaData;
-  staticRoomData: RoomMetaData;
-  dynamicRoomData: RoomMetaData;
-  constructionManager: RoomMetaData;
-  energyManager: RoomMetaData;
-  spawnManager: RoomMetaData & SpawnMetaData;
-  harvesterLifeCycle: RoomMetaData & TargetMetaData & CreepMetaData & DropOffMetaData & NextAction;
-  builderLifeCycle: RoomMetaData & TargetMetaData & CreepMetaData & NextAction;
-  move:  MoveMetaData;
-  harvest: RoomMetaData & TargetMetaData & CreepMetaData;
-  deposit: RoomMetaData & DropOffMetaData & CreepMetaData;
-  upgrade: RoomMetaData & CreepMetaData;
-  pickup: PickupMetaData;
-  build: RoomMetaData & TargetMetaData & CreepMetaData;
+    roomSupervisor: RoomMetaData;
+    staticRoomData: RoomMetaData;
+    dynamicRoomData: RoomMetaData;
+    constructionManager: RoomMetaData;
+    energyManager: RoomMetaData;
+    spawnManager: RoomMetaData & SpawnMetaData;
+
+    haulerLifeCycle: RoomMetaData & TargetMetaData & CreepMetaData & DropOffMetaData & NextAction;
+    harvesterLifeCycle: RoomMetaData & TargetMetaData & CreepMetaData & DropOffMetaData & NextAction;
+    builderLifeCycle: RoomMetaData & TargetMetaData & CreepMetaData & NextAction;
+    minerLifeCycle: RoomMetaData & TargetMetaData & CreepMetaData & NextAction;
+
+    move: MoveMetaData;
+    mine: RoomMetaData & TargetMetaData & CreepMetaData;
+    harvest: RoomMetaData & TargetMetaData & CreepMetaData;
+    deposit: RoomMetaData & DropOffMetaData & CreepMetaData;
+    upgrade: RoomMetaData & CreepMetaData;
+    pickup: PickupMetaData;
+    build: RoomMetaData & TargetMetaData & CreepMetaData;
 }
 
 interface RoomDataTable {
-  [name: string]: RoomData;
+    [name: string]: RoomData;
 }
 
 interface SerializedProcess {
-  name: string;
-  priority: number;
-  metaData: object;
-  type: ProcessTypes;
-  suspend: string | number | boolean;
-  parent: string;
+    name: string;
+    priority: number;
+    metaData: object;
+    type: ProcessTypes;
+    suspend: string | number | boolean;
+    parent: string;
 }
 
 interface SerializedRoomData {
-  name: string;
-  sources: SourceObjectInfo[];
-  spawns: SpawnObjectInfo[];
-  rcl: number;
-  builders: number;
+    name: string;
+    sources: SourceObjectInfo[];
+    spawns: SpawnObjectInfo[];
+    rcl: number;
+    builders: number;
 }
 
 interface RoomDataSources {
-  [name: string]: SourceObjectInfo;
+    [name: string]: SourceObjectInfo;
 }
 
 interface ConstructionList {
-  container?: Point[];
-  extension?: Point[];
-  road?: Point[];
+    container?: Point[];
+    extension?: Point[];
+    road?: Point[];
+}
+
+interface CreepMemory {
+    intendedToMove: boolean;
+    previousPosition: Point;
+    nextAction: string;
+}
+
+interface RoomMemory extends RoomMemory{
+    sources: RoomDataSources;
+    spawns?: SpawnObjectInfo[];
+    builders?: number;
+    baseStartPoint?: Point;
+    baseEndPoint?: Point;
 }

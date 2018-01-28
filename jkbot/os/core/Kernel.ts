@@ -1,47 +1,55 @@
-import { MessageLogItem, ProcessTable, ProcessTypes, RoomDataTable, SerializedProcess,
-  SerializedRoomData, SourceObjectInfo, SpawnObjectInfo } from "../../typings";
+import {
+    MessageLogItem, ProcessTable, ProcessTypes, RoomDataTable, SerializedProcess,
+    SerializedRoomData, SourceObjectInfo, SpawnObjectInfo
+} from "../../typings";
 
-import { BuildProcess } from "os/processes/creep-actions/BuildProcess";
-import { DepositProcess } from "os/processes/creep-actions/DepositProcess";
-import { HarvestProcess } from "os/processes/creep-actions/HarvestProcess";
-import { MoveProcess } from "os/processes/creep-actions/MoveProcess";
-import { PickupProcess } from "os/processes/creep-actions/PickupProcess";
-import { UpgradeProcess } from "os/processes/creep-actions/UpgradeProcess";
+import {BuildProcess} from "os/processes/creep-actions/BuildProcess";
+import {DepositProcess} from "os/processes/creep-actions/DepositProcess";
+import {HarvestProcess} from "os/processes/creep-actions/HarvestProcess";
+import {MineProcess} from "os/processes/creep-actions/MineProcess";
+import {MoveProcess} from "os/processes/creep-actions/MoveProcess";
+import {PickupProcess} from "os/processes/creep-actions/PickupProcess";
+import {UpgradeProcess} from "os/processes/creep-actions/UpgradeProcess";
 
-import { BuilderLifeCycleProcess } from "os/processes/life-cycles/BuilderLifeCycleProcess";
-import { HarvesterLifeCycleProcess } from "os/processes/life-cycles/HarvesterLifeCycleProcess";
+import {BuilderLifeCycleProcess} from "os/processes/life-cycles/BuilderLifeCycleProcess";
+import {HarvesterLifeCycleProcess} from "os/processes/life-cycles/HarvesterLifeCycleProcess";
+import {HaulerLifeCycleProcess} from "os/processes/life-cycles/HaulerLifeCycleProcess";
+import {MinerLifeCycleProcess} from "os/processes/life-cycles/MinerLifeCycleProcess";
 
-import { ConstructionManagerProcess } from "os/processes/room/ConstructionManagerProcess";
-import { EnergyManagementProcess } from "os/processes/room/EnergyManagerProcess";
-import { RoomSupervisorProcess } from "os/processes/room/RoomSupervisorProcess";
-import { SpawnManagerProcess } from "os/processes/room/SpawnManagerProcess";
-import { StaticRoomDataProcess } from "os/processes/room/StaticRoomDataProcess";
+import {ConstructionManagerProcess} from "os/processes/room/ConstructionManagerProcess";
+import {EnergyManagementProcess} from "os/processes/room/EnergyManagerProcess";
+import {RoomSupervisorProcess} from "os/processes/room/RoomSupervisorProcess";
+import {SpawnManagerProcess} from "os/processes/room/SpawnManagerProcess";
+import {StaticRoomDataProcess} from "os/processes/room/StaticRoomDataProcess";
 
-import { InitProcess } from "os/processes/system/InitProcess";
-import { MemoryManagerProcess } from "os/processes/system/MemoryManagerProcess";
-import { SuspensionProcess } from "os/processes/system/SuspensionProcess";
+import {InitProcess} from "os/processes/system/InitProcess";
+import {MemoryManagerProcess} from "os/processes/system/MemoryManagerProcess";
+import {SuspensionProcess} from "os/processes/system/SuspensionProcess";
 
-import { RoomData } from "os/core/RoomData";
-import { Constants } from "./Constants";
-import { Process } from "./Process";
+import {RoomData} from "os/core/RoomData";
+import {Constants} from "./Constants";
+import {Process} from "./Process";
 
 export const processTypes = {
-  build: BuildProcess,
-  builderLifeCycle: BuilderLifeCycleProcess,
-  constructionManager: ConstructionManagerProcess,
-  deposit: DepositProcess,
-  energyManager: EnergyManagementProcess,
-  harvest: HarvestProcess,
-  harvesterLifeCycle: HarvesterLifeCycleProcess,
-  init: InitProcess,
-  memoryManager: MemoryManagerProcess,
-  move: MoveProcess,
-  pickup: PickupProcess,
-  roomSupervisor: RoomSupervisorProcess,
-  spawnManager: SpawnManagerProcess,
-  staticRoomData: StaticRoomDataProcess,
-  suspension: SuspensionProcess,
-  upgrade: UpgradeProcess
+    build: BuildProcess,
+    builderLifeCycle: BuilderLifeCycleProcess,
+    constructionManager: ConstructionManagerProcess,
+    deposit: DepositProcess,
+    energyManager: EnergyManagementProcess,
+    harvest: HarvestProcess,
+    harvesterLifeCycle: HarvesterLifeCycleProcess,
+    haulerLifeCycle: HaulerLifeCycleProcess,
+    init: InitProcess,
+    memoryManager: MemoryManagerProcess,
+    mine: MineProcess,
+    minerLifeCycle: MinerLifeCycleProcess,
+    move: MoveProcess,
+    pickup: PickupProcess,
+    roomSupervisor: RoomSupervisorProcess,
+    spawnManager: SpawnManagerProcess,
+    staticRoomData: StaticRoomDataProcess,
+    suspension: SuspensionProcess,
+    upgrade: UpgradeProcess
 } as { [type: string]: any };
 
 export class Kernel {
@@ -71,7 +79,6 @@ export class Kernel {
         this.loadRoomDataTable();
 
         this.addProcess("init", "init", Constants.PRIORITY_FIRST, {});
-        this.addProcess("suspension", "suspension", Constants.PRIORITY_LAST, {});
     }
 
     /**
@@ -126,9 +133,9 @@ export class Kernel {
 
         _.forEach(Memory.jkbot.processTable, function(entry: any) {
             if (processTypes[entry.type]) {
-              kernel.processTable[entry.name] = new processTypes[entry.type](entry, kernel);
+                kernel.processTable[entry.name] = new processTypes[entry.type](entry, kernel);
             } else {
-              kernel.log("Load process table", "Tried loading process without type: " + entry.name, "error");
+                kernel.log("Load process table", "Tried loading process without type: " + entry.name, "error");
             }
         });
 
@@ -138,10 +145,10 @@ export class Kernel {
      * Loads the room data table from memory
      */
     public loadRoomDataTable() {
-      let kernel = this;
+        let kernel = this;
 
-      _.forEach(Memory.jkbot.roomDataTable, function(entry: SerializedRoomData) {
-          kernel.roomDataTable[entry.name] = new RoomData(entry);
+        _.forEach(Memory.jkbot.roomDataTable, function(entry: SerializedRoomData) {
+            kernel.roomDataTable[entry.name] = new RoomData(entry);
         });
     }
 
@@ -161,7 +168,7 @@ export class Kernel {
      * @returns {boolean}
      */
     public hasRoomData(name: string) {
-      return (!!this.getRoomDataByName(name));
+        return (!!this.getRoomDataByName(name));
     }
 
     /**
@@ -181,7 +188,7 @@ export class Kernel {
      * @returns {RoomData}
      */
     public getRoomDataByName(name: string): RoomData {
-      return this.roomDataTable[name];
+        return this.roomDataTable[name];
     }
 
     /**
@@ -191,12 +198,12 @@ export class Kernel {
      */
     public getHighestPriorityProcess() {
         if (!this.sortedProcesses.length) {
-          let toRunProcesses = _.filter(this.processTable, function(entry: Process) {
-              return (!entry.hasAlreadyRun && entry.suspend === false );
-          });
+            let toRunProcesses = _.filter(this.processTable, function(entry: Process) {
+                return (!entry.hasAlreadyRun && entry.suspend === false );
+            });
 
-          let sorted = _.sortBy(toRunProcesses, "priority").reverse();
-          this.sortedProcesses = _.map(sorted, "name");
+            let sorted = _.sortBy(toRunProcesses, "priority").reverse();
+            this.sortedProcesses = _.map(sorted, "name");
         }
 
         let name = this.sortedProcesses.shift()!;
@@ -240,8 +247,8 @@ export class Kernel {
 
         let roomDataList: SerializedRoomData[] = [];
         _.forEach(this.roomDataTable, function(entry: RoomData) {
-          entry.progressSpawns();
-          roomDataList.push(entry.serialize());
+            entry.progressSpawns();
+            roomDataList.push(entry.serialize());
         });
 
         Memory.jkbot.roomDataTable = roomDataList;
@@ -284,13 +291,13 @@ export class Kernel {
      * @param {number} rcl
      */
     public addRoomData(name: string, sources: SourceObjectInfo[], spawns: SpawnObjectInfo[], rcl: number) {
-      this.roomDataTable[name] = new RoomData({
-        builders: 0,
-        name,
-        rcl,
-        sources,
-        spawns
-      });
+        this.roomDataTable[name] = new RoomData({
+            builders: 0,
+            name,
+            rcl,
+            sources,
+            spawns
+        });
     }
 
     /**
@@ -299,7 +306,7 @@ export class Kernel {
      * @param {RoomData} data
      */
     public updateRoomData(data: RoomData) {
-      this.roomDataTable[data.name] = data;
+        this.roomDataTable[data.name] = data;
     }
 
     /**
@@ -313,42 +320,42 @@ export class Kernel {
         output += "<table cellpadding='4'>";
 
         output +=
-                "<tr>" +
-                "   <th>Tick</th>" +
-                "   <th>Process</th>" +
-                "   <th>Message</th>" +
-                "   <th>CPU</th>" +
-                "</tr>";
+            "<tr>" +
+            "   <th>Tick</th>" +
+            "   <th>Process</th>" +
+            "   <th>Message</th>" +
+            "   <th>CPU</th>" +
+            "</tr>";
 
         _.forEach(this.messageLog, function(entry: MessageLogItem) {
 
-          if (!Memory.jkbot.debug && entry.type === "debug") {
-            return;
-          }
+            if (!Memory.jkbot.debug && entry.type === "debug") {
+                return;
+            }
 
-          let color = "";
-          switch (entry.type) {
-              case "debug":
-                  color = "#e4e4e4";
-                  break;
-              case "error":
-                  color = "#FF4500";
-                  break;
-              case "info":
-                  color = "green";
-                  break;
-              default:
-                  color = "#ffffff";
-                  break;
-          }
+            let color = "";
+            switch (entry.type) {
+                case "debug":
+                    color = "#e4e4e4";
+                    break;
+                case "error":
+                    color = "#FF4500";
+                    break;
+                case "info":
+                    color = "green";
+                    break;
+                default:
+                    color = "#ffffff";
+                    break;
+            }
 
-          output +=
-              "<tr style='color: " + color + ";'>" +
-              "   <td> " + Game.time + " </td>" +
-              "   <td> " + entry.processName + " </td>" +
-              "   <td> " + entry.message + " </td>" +
-              "   <td> " + entry.cpu + " </td>" +
-              "</tr>";
+            output +=
+                "<tr style='color: " + color + ";'>" +
+                "   <td> " + Game.time + " </td>" +
+                "   <td> " + entry.processName + " </td>" +
+                "   <td> " + entry.message + " </td>" +
+                "   <td> " + entry.cpu + " </td>" +
+                "</tr>";
         });
 
         output += "</table>";
