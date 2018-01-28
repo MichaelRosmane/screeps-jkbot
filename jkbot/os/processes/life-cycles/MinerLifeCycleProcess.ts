@@ -1,6 +1,5 @@
 import {LifeCycleProcess} from "os/processes/LifeCycleProcess";
 import {EnergyManagementProcess} from "os/processes/room/EnergyManagerProcess";
-import {MetaData} from "typings";
 
 export class MinerLifeCycleProcess extends LifeCycleProcess {
     public type = "minerLifeCycle";

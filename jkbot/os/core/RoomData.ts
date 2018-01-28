@@ -1,5 +1,3 @@
-import {Point, RoomDataSources, SerializedRoomData, SourceObjectInfo, SpawnObjectInfo} from "typings";
-
 export class RoomData {
     public sources: RoomDataSources = {};
     public spawns: SpawnObjectInfo[];

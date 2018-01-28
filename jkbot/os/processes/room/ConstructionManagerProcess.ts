@@ -1,6 +1,5 @@
 import {Constants} from "os/core/Constants";
 import {Rcl2Constructions} from "os/helpers/construction/Rcl2Constructions";
-import {BasicObjectInfo, ConstructionList, MetaData, Point, WeightedPoint} from "../../../typings";
 import {Process} from "../../core/Process";
 import {SpawnManagerProcess} from "./SpawnManagerProcess";
 

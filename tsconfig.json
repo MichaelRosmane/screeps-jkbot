@@ -13,8 +13,7 @@
     "types": [
       "lodash",
       "typed-screeps",
-      "node",
-      "jkbot"
+      "node"
     ]
   },
   "exclude": [

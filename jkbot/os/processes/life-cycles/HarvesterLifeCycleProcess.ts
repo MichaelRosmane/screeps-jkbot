@@ -1,9 +1,6 @@
-import {Process} from "os/core/Process";
 import {LifeCycleProcess} from "os/processes/LifeCycleProcess";
 import {ConstructionManagerProcess} from "os/processes/room/ConstructionManagerProcess";
 import {EnergyManagementProcess} from "os/processes/room/EnergyManagerProcess";
-import {BasicObjectInfo, MetaData} from "typings";
-import {Constants} from "../../core/Constants";
 
 export class HarvesterLifeCycleProcess extends LifeCycleProcess {
     public type = "harvesterLifeCycle";

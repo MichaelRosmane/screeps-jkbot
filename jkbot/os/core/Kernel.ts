@@ -1,8 +1,3 @@
-import {
-    MessageLogItem, ProcessTable, ProcessTypes, RoomDataTable, SerializedProcess,
-    SerializedRoomData, SourceObjectInfo, SpawnObjectInfo
-} from "../../typings";
-
 import {BuildProcess} from "os/processes/creep-actions/BuildProcess";
 import {DepositProcess} from "os/processes/creep-actions/DepositProcess";
 import {HarvestProcess} from "os/processes/creep-actions/HarvestProcess";

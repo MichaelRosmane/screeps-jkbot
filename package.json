@@ -2,10 +2,10 @@
   "name": "screeps-typescript-starter",
   "version": "3.0.0",
   "description": "",
-  "main": "src/main.ts",
+  "main": "jkbot/main.ts",
   "//": "If you add or change the names of destinations in screeps.json, make sure you update these scripts to reflect the changes",
   "scripts": {
-    "lint": "tslint \"src/**/*.ts\"",
+    "lint": "tslint \"jkbot/**/*.ts\"",
     "push-main": "rollup -c --dest main",
     "push-pserver": "rollup -c --dest pserver",
     "push-sim": "rollup -c --dest sim",

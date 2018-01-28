@@ -1,6 +1,5 @@
 import {Constants} from "../../core/Constants";
 import {Process} from "../../core/Process";
-import {MetaData} from "../../../typings";
 
 // TODO
 export class InitProcess extends Process {

@@ -1,6 +1,5 @@
 import {Constants} from "os/core/Constants";
 import {Process} from "os/core/Process";
-import {BasicObjectInfo} from "typings";
 
 export abstract class LifeCycleProcess extends Process {
 

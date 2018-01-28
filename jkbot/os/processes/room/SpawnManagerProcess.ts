@@ -1,6 +1,5 @@
 import {Constants} from "os/core/Constants";
 import {SpawnHelper} from "os/helpers/SpawnHelper";
-import {CreepToSpawn, MetaData, SpawnObjectInfo} from "typings";
 import {Process} from "../../core/Process";
 
 export class SpawnManagerProcess extends Process {

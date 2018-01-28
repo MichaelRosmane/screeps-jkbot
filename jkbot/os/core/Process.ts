@@ -1,5 +1,3 @@
-import {ProcessTypes, SerializedProcess} from "../../typings";
-
 import {RoomData} from "os/core/RoomData";
 import {Kernel} from "./Kernel";
 

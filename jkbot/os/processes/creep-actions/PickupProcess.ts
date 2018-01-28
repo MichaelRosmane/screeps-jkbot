@@ -1,5 +1,4 @@
 import {CreepActionProcess} from "os/processes/CreepActionProcess";
-import {MetaData} from "typings";
 
 export class PickupProcess extends CreepActionProcess {
     public type = "pickup";

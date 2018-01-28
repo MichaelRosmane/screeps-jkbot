@@ -1,5 +1,3 @@
-import {CreepConfig, CreepTypes} from "typings";
-
 export class SpawnHelper {
 
     private static maxParts = 50;

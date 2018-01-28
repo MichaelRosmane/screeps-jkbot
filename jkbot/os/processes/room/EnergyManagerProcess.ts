@@ -1,6 +1,5 @@
 import {Constants} from "os/core/Constants";
 import {SpawnManagerProcess} from "os/processes/room/SpawnManagerProcess";
-import {BasicObjectInfo, MetaData} from "typings";
 import {Process} from "../../core/Process";
 
 export class EnergyManagementProcess extends Process {

@@ -1,6 +1,5 @@
 import {Constants} from "os/core/Constants";
 import {Process} from "os/core/Process";
-import {MetaData, RoomMemory} from "typings";
 
 export class RoomSupervisorProcess extends Process {
     public type = "roomSupervisor";

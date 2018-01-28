@@ -1,6 +1,4 @@
-import {PathingHelper} from "os/helpers/PathingHelper";
 import {CreepActionProcess} from "os/processes/CreepActionProcess";
-import {MetaData} from "typings";
 
 export class MoveProcess extends CreepActionProcess {
     public type = "move";
@@ -23,6 +21,7 @@ export class MoveProcess extends CreepActionProcess {
         }
 
         creep.memory.intendedToMove = true;
+        creep.memory.nextAction = "test";
 
         if (this.metaData.range) {
             range = this.metaData.range;

@@ -1,5 +1,3 @@
-import {ConstructionList} from "typings";
-
 export const Rcl2Constructions: ConstructionList = {
     container: [
         {

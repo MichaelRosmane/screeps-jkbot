@@ -1,6 +1,3 @@
-import {Process} from "./os/core/Process";
-import {RoomData} from "./os/core/RoomData";
-
 // -------------------------------------------------------------------------------------------------------------- Types
 type ProcessTypes =
     "init"
@@ -180,18 +177,4 @@ interface ConstructionList {
     container?: Point[];
     extension?: Point[];
     road?: Point[];
-}
-
-interface CreepMemory {
-    intendedToMove: boolean;
-    previousPosition: Point;
-    nextAction: string;
-}
-
-interface RoomMemory extends RoomMemory{
-    sources: RoomDataSources;
-    spawns?: SpawnObjectInfo[];
-    builders?: number;
-    baseStartPoint?: Point;
-    baseEndPoint?: Point;
 }

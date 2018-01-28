@@ -1,7 +1,4 @@
-import {MetaData, SerializedRoomData} from "../../../typings";
 import {Process} from "../../core/Process";
-import {RoomData} from "../../core/RoomData";
-import {MemoryManagerProcess} from "../system/MemoryManagerProcess";
 
 export class StaticRoomDataProcess extends Process {
 
