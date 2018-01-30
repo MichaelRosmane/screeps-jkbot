@@ -38,11 +38,8 @@ export class ConstructionManagerProcess extends Process {
 
     public getConstructionSite(): BasicObjectInfo {
 
-        if (!this.roomData) {
-            this.roomData = this.getRoomData(this.metaData.roomName);
-        }
+        // TODO get build priorities based on RCL
 
-        let rcl = this.roomData.rcl;
         let site = this.sites.shift();
 
         if (site) {
@@ -67,16 +64,13 @@ export class ConstructionManagerProcess extends Process {
         let sites = this.sites;
         let spawnManagerProcessName = "spawnManager-" + this.metaData.roomName;
         let spawnManager: SpawnManagerProcess = this.kernel.getProcessByName(spawnManagerProcessName)!;
+        let room = Game.rooms[this.metaData.roomName];
 
-        if (!this.roomData) {
-            this.roomData = this.getRoomData(this.metaData.roomName);
-        }
-
-        if (!sites.length) {
+        if (!sites.length || !room) {
             return;
         }
 
-        if (!this.roomData.builders) {
+        if (room.memory.builders === 0) {
             spawnManager.addCreepToSpawnQue({
                 meta: {},
                 parentProcess: this.name,
@@ -84,7 +78,7 @@ export class ConstructionManagerProcess extends Process {
                 processToCreate: "builderLifeCycle",
                 type: "builder"
             });
-            this.roomData.builders++;
+            room.memory.builders++;
         }
     }
 
@@ -221,31 +215,33 @@ export class ConstructionManagerProcess extends Process {
     }
 
     private placeConstructionSitesForBase() {
-        if (!this.roomData) {
-            this.roomData = this.getRoomData(this.metaData.roomName);
+        let room = Game.rooms[this.metaData.roomName];
+
+        if (!room || !room.controller) {
+            return;
         }
 
-        if (!this.roomData.baseStartPoint) {
-            this.roomData.baseStartPoint = {
-                x: this.roomData.spawns[0].x - 6,
-                y: this.roomData.spawns[0].y
+        if (!room.memory.baseStartPoint || room.memory.baseEndPoint) {
+            room.memory.baseStartPoint = {
+                x: room.memory.spawns[0].x - 6,
+                y: room.memory.spawns[0].y
             };
 
-            this.roomData.baseEndPoint = {
-                x: this.roomData.spawns[0].x - 6 + 13,
-                y: this.roomData.spawns[0].y + 13
+            room.memory.baseEndPoint = {
+                x: room.memory.spawns[0].x - 6 + 13,
+                y: room.memory.spawns[0].y + 13
             };
         }
 
         let buildings: ConstructionList | boolean = false;
-        switch (this.roomData.rcl) {
+        switch (room.controller.level) {
             case 2:
                 buildings = Rcl2Constructions;
                 break;
         }
 
         if (buildings) {
-            this.createConstructionSitesForBuildings(buildings, this.roomData.baseStartPoint);
+            this.createConstructionSitesForBuildings(buildings, room.memory.baseStartPoint);
         }
     }
 
@@ -276,21 +272,30 @@ export class ConstructionManagerProcess extends Process {
         }
     }
 
+    /*
     private buildRoadsToSources() {
-        this.roomData = this.ensureRoomDataExists();
         let room = this.room;
 
         let visual = new RoomVisual(room.name);
 
-        let base = this.roomData.baseStartPoint;
-        let end = this.roomData.baseEndPoint;
+        if (!room.memory.baseStartPoint || room.memory.baseEndPoint) {
+            room.memory.baseStartPoint = {
+                x: room.memory.spawns[0].x - 6,
+                y: room.memory.spawns[0].y
+            };
 
-        this.log("base => x: " + base.x + " y: " + base.y, "error");
-        this.log("end => x: " + end.x + " y: " + end.y, "error");
+            room.memory.baseEndPoint = {
+                x: room.memory.spawns[0].x - 6 + 13,
+                y: room.memory.spawns[0].y + 13
+            };
+        }
+
+        let base = room.memory.baseStartPoint;
+        let end = room.memory.baseEndPoint;
 
         visual.rect(base.x, base.y, 13, 13, {fill: "transparent", stroke: "#f00"});
 
-        _.forEach(this.roomData.sources, function(source) {
+        _.forEach(room.memory.sources, function(source) {
             let path = room.findPath(
                 new RoomPosition(base.x + 6, base.y + 6, room.name),
                 new RoomPosition(source.x, source.y, room.name),
@@ -309,5 +314,6 @@ export class ConstructionManagerProcess extends Process {
             });
         });
     }
+    */
 
 }

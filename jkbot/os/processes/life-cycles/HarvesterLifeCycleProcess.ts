@@ -1,5 +1,4 @@
 import {LifeCycleProcess} from "os/processes/LifeCycleProcess";
-import {ConstructionManagerProcess} from "os/processes/room/ConstructionManagerProcess";
 import {EnergyManagementProcess} from "os/processes/room/EnergyManagerProcess";
 
 export class HarvesterLifeCycleProcess extends LifeCycleProcess {
@@ -14,17 +13,9 @@ export class HarvesterLifeCycleProcess extends LifeCycleProcess {
         let target = this.metaData.target;
         let room = Game.rooms[this.metaData.roomName];
 
-        let constructionManagerName = "constructionManager-" + this.metaData.roomName;
-
-        let constructionManager: ConstructionManagerProcess = this.kernel.getProcessByName(constructionManagerName)!;
-
-        if (!this.roomData) {
-            this.roomData = this.getRoomData(this.metaData.roomName);
-        }
-
-        if (!creep || !room) {
+        if (!creep) {
             this.completed = true;
-            this.roomData.sources[target.id].isMinedBy.harvesters--;
+            room.memory.sources[target.id].isMinedBy.harvesters--;
             return;
         } else if (creep.spawning) {
             this.suspend = 3;
@@ -32,7 +23,7 @@ export class HarvesterLifeCycleProcess extends LifeCycleProcess {
         }
 
         if (creep.ticksToLive < 20) {
-            this.roomData.sources[target.id].isMinedBy.harvesters--;
+            room.memory.sources[target.id].isMinedBy.harvesters--;
             this.suspend = creep.ticksToLive;
             return;
         }
@@ -82,10 +73,10 @@ export class HarvesterLifeCycleProcess extends LifeCycleProcess {
 
                 } else if (room.controller) {
                     this.switchToMoveProcess({
-                        x: room.controller.pos.x,
-                        y: room.controller.pos.y,
+                        id: room.controller.id,
                         roomName: room.name,
-                        id: room.controller.id
+                        x: room.controller.pos.x,
+                        y: room.controller.pos.y
                     }, 2);
                     this.metaData.next = "upgrade";
                 }

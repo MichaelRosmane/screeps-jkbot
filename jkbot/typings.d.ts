@@ -48,7 +48,7 @@ interface SourceObjectInfo extends BasicObjectInfo {
 }
 
 interface SpawnObjectInfo extends BasicObjectInfo {
-    spawning: boolean | number;
+    spawning: number;
     spawnName: string;
 }
 
@@ -122,12 +122,12 @@ interface CreepTypes {
     [name: string]: CreepBaseType;
 }
 
-interface ProcessTable {
-    [name: string]: Process;
+interface RoomSupervisor extends RoomMetaData {
+    roomDataSet: boolean;
 }
 
 interface MetaData {
-    roomSupervisor: RoomMetaData;
+    roomSupervisor: RoomSupervisor;
     staticRoomData: RoomMetaData;
     dynamicRoomData: RoomMetaData;
     constructionManager: RoomMetaData;
@@ -148,10 +148,6 @@ interface MetaData {
     build: RoomMetaData & TargetMetaData & CreepMetaData;
 }
 
-interface RoomDataTable {
-    [name: string]: RoomData;
-}
-
 interface SerializedProcess {
     name: string;
     priority: number;
@@ -167,10 +163,6 @@ interface SerializedRoomData {
     spawns: SpawnObjectInfo[];
     rcl: number;
     builders: number;
-}
-
-interface RoomDataSources {
-    [name: string]: SourceObjectInfo;
 }
 
 interface ConstructionList {

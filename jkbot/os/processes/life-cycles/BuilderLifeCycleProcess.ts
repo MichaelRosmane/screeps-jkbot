@@ -10,10 +10,6 @@ export class BuilderLifeCycleProcess extends LifeCycleProcess {
 
     public run(): void {
 
-        if (!this.roomData) {
-            this.roomData = this.getRoomData(this.metaData.roomName);
-        }
-
         let creep = Game.creeps[this.metaData.creepName];
         let room = Game.rooms[this.metaData.roomName];
 
@@ -22,7 +18,7 @@ export class BuilderLifeCycleProcess extends LifeCycleProcess {
 
         if (!creep || !room) {
             this.completed = true;
-            this.roomData.builders--;
+            room.memory.builders--;
             return;
         } else if (creep.spawning) {
             this.suspend = 3;
@@ -30,7 +26,7 @@ export class BuilderLifeCycleProcess extends LifeCycleProcess {
         }
 
         if (creep.ticksToLive < 20) {
-            this.roomData.builders--;
+            room.memory.builders--;
             this.suspend = creep.ticksToLive;
             return;
         }

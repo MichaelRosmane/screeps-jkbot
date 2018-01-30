@@ -20,8 +20,6 @@ import {StaticRoomDataProcess} from "os/processes/room/StaticRoomDataProcess";
 import {InitProcess} from "os/processes/system/InitProcess";
 import {MemoryManagerProcess} from "os/processes/system/MemoryManagerProcess";
 import {SuspensionProcess} from "os/processes/system/SuspensionProcess";
-
-import {RoomData} from "os/core/RoomData";
 import {Constants} from "./Constants";
 import {Process} from "./Process";
 
@@ -47,13 +45,15 @@ export const processTypes = {
     upgrade: UpgradeProcess
 } as { [type: string]: any };
 
+interface ProcessTable {
+    [name: string]: Process;
+}
+
 export class Kernel {
 
     private cpuLimit: number;
 
     public processTable: ProcessTable = {};
-
-    public roomDataTable: RoomDataTable = {};
 
     private sortedProcesses: string[];
 
@@ -71,7 +71,6 @@ export class Kernel {
 
         this.setCpuLimit();
         this.loadProcessTable();
-        this.loadRoomDataTable();
 
         this.addProcess("init", "init", Constants.PRIORITY_FIRST, {});
     }
@@ -137,17 +136,6 @@ export class Kernel {
     }
 
     /**
-     * Loads the room data table from memory
-     */
-    public loadRoomDataTable() {
-        let kernel = this;
-
-        _.forEach(Memory.jkbot.roomDataTable, function(entry: SerializedRoomData) {
-            kernel.roomDataTable[entry.name] = new RoomData(entry);
-        });
-    }
-
-    /**
      * Checks if a process with a given name exists in the process table
      *
      * @param {string} name
@@ -158,15 +146,6 @@ export class Kernel {
     }
 
     /**
-     * Checks if a given room already has data
-     * @param name
-     * @returns {boolean}
-     */
-    public hasRoomData(name: string) {
-        return (!!this.getRoomDataByName(name));
-    }
-
-    /**
      * Gets a process by name
      *
      * @param {string} name
@@ -174,16 +153,6 @@ export class Kernel {
      */
     public getProcessByName(name: string): any {
         return this.processTable[name];
-    }
-
-    /**
-     * Gets RoomData by room name
-     *
-     * @param {string} name
-     * @returns {RoomData}
-     */
-    public getRoomDataByName(name: string): RoomData {
-        return this.roomDataTable[name];
     }
 
     /**
@@ -220,8 +189,6 @@ export class Kernel {
             }
         }
 
-        processToRun.cleanUp();
-
         this.log("Next process", "Finished process => " + processToRun.name, "debug");
 
         processToRun.hasAlreadyRun = true;
@@ -240,16 +207,21 @@ export class Kernel {
 
         Memory.jkbot.processTable = processList;
 
-        let roomDataList: SerializedRoomData[] = [];
-        _.forEach(this.roomDataTable, function(entry: RoomData) {
-            entry.progressSpawns();
-            roomDataList.push(entry.serialize());
-        });
+        for (let name in Game.rooms) {
 
-        Memory.jkbot.roomDataTable = roomDataList;
+            let room = Game.rooms[name];
+
+            if (room && room.memory.spawns && room.memory.spawns.length) {
+                for (let spawnCount = 0; spawnCount < room.memory.spawns.length; spawnCount++) {
+                    if (room.memory.spawns[spawnCount].spawning > 0) {
+                        room.memory.spawns[spawnCount].spawning--;
+                    }
+                }
+            }
+
+        }
 
         this.log("Final", "Processes count: " + processList.length, "info");
-        this.log("Final", "Room data count: " + roomDataList.length, "info");
         this.log("Final", "total CPU used: " + Game.cpu.getUsed(), "info");
 
         console.log(this.buildMessageLogTable());
@@ -275,33 +247,6 @@ export class Kernel {
         return _.filter(this.processTable, function(process: Process) {
             return (!process.hasAlreadyRun && process.suspend === false);
         }).length > 0;
-    }
-
-    /**
-     * Adds a new RoomData entry to the table
-     *
-     * @param {string} name
-     * @param {SourceObjectInfo[]} sources
-     * @param {SpawnObjectInfo[]} spawns
-     * @param {number} rcl
-     */
-    public addRoomData(name: string, sources: SourceObjectInfo[], spawns: SpawnObjectInfo[], rcl: number) {
-        this.roomDataTable[name] = new RoomData({
-            builders: 0,
-            name,
-            rcl,
-            sources,
-            spawns
-        });
-    }
-
-    /**
-     * Updates the given roomdata object
-     *
-     * @param {RoomData} data
-     */
-    public updateRoomData(data: RoomData) {
-        this.roomDataTable[data.name] = data;
     }
 
     /**

@@ -1,4 +1,3 @@
-import {RoomData} from "os/core/RoomData";
 import {Kernel} from "./Kernel";
 
 export abstract class Process {
@@ -20,8 +19,6 @@ export abstract class Process {
 
     public hasAlreadyRun: boolean;
 
-    protected roomData: RoomData | false;
-
     /**
      * Sets up a new Process object
      *
@@ -40,13 +37,6 @@ export abstract class Process {
         if (entry.parent !== "") {
             this.parent = this.kernel.getProcessByName(entry.parent);
         }
-
-        if (this.metaData.roomName) {
-            this.roomData = this.getRoomData(this.metaData.roomName);
-        } else {
-            this.roomData = false;
-        }
-
     }
 
     /**
@@ -117,29 +107,5 @@ export abstract class Process {
      */
     public log(message: string, type = "debug") {
         this.kernel.log(this.name, message, type);
-    }
-
-    /**
-     * Grabs RoomData from the kernel
-     *
-     * @param {string} name
-     * @returns {RoomData}
-     */
-    public getRoomData(name: string): RoomData {
-        return this.kernel.getRoomDataByName(name);
-    }
-
-    public ensureRoomDataExists() {
-        if (!this.roomData) {
-            this.roomData = this.getRoomData(this.metaData.roomName);
-        }
-
-        return this.roomData;
-    }
-
-    public cleanUp(): void {
-        if (this.roomData) {
-            this.kernel.updateRoomData(this.roomData);
-        }
     }
 }

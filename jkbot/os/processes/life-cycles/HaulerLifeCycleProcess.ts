@@ -13,13 +13,9 @@ export class HaulerLifeCycleProcess extends LifeCycleProcess {
         let target = this.metaData.target;
         let room = Game.rooms[this.metaData.roomName];
 
-        if (!this.roomData) {
-            this.roomData = this.getRoomData(this.metaData.roomName);
-        }
-
-        if (!creep || !room) {
+        if (!creep) {
             this.completed = true;
-            this.roomData.sources[target.id].isMinedBy.haulers--;
+            room.memory.sources[target.id].isMinedBy.haulers--;
             return;
         } else if (creep.spawning) {
             this.suspend = 1;
@@ -27,7 +23,7 @@ export class HaulerLifeCycleProcess extends LifeCycleProcess {
         }
 
         if (creep.ticksToLive < 20) {
-            this.roomData.sources[target.id].isMinedBy.haulers--;
+            room.memory.sources[target.id].isMinedBy.haulers--;
             this.suspend = creep.ticksToLive;
             return;
         }

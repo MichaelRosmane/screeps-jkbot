@@ -18,13 +18,11 @@ export class SpawnManagerProcess extends Process {
         }
 
         // ---------------------------------------------------------------------------------------------------------- Setup
-        if (!this.roomData) {
-            this.roomData = this.getRoomData(this.metaData.roomName);
-        }
+        let room = Game.rooms[this.metaData.roomName];
 
         // -------------------------------------------------------------------------- Check if a spawn is available for use
-        let availableSpawns = _.filter(this.roomData.spawns, function(spawn) {
-            return (spawn.spawning === false);
+        let availableSpawns = _.filter(room.memory.spawns, function(spawn) {
+            return (spawn.spawning === 0);
         });
 
         this.log("available spawns: " + availableSpawns.length);
@@ -54,9 +52,7 @@ export class SpawnManagerProcess extends Process {
      * @returns {CreepToSpawn}
      */
     private getHighestPriorityCreepToSpawn(): CreepToSpawn {
-        let sorted = _.sortBy(this.metaData.spawnQue, "priority");
-
-        this.metaData.spawnQue = sorted;
+        this.metaData.spawnQue = _.sortBy(this.metaData.spawnQue, "priority");
 
         return this.metaData.spawnQue.shift()!;
     }
@@ -74,25 +70,16 @@ export class SpawnManagerProcess extends Process {
         let room = Game.rooms[this.metaData.roomName];
         let name = creep.type + "-" + Game.time;
 
-        if (!this.roomData) {
-            this.roomData = this.getRoomData(this.metaData.roomName);
-        }
-
         let creepConfig = SpawnHelper.generateCreepFromBaseType(creep.type, room.energyAvailable);
 
         // ------------------------------------------------------------------------ Trying to spawn creep & handling result
         let result = Game.spawns[spawn.spawnName].spawnCreep(creepConfig.parts, name);
 
-        this.log("spawn attempt result: " + result);
-        this.log("name: " + name);
-        this.log("parts: " + creepConfig.parts);
-        this.log("energy avaialble: " + room.energyAvailable);
-
         if (result === OK) {
-            let index = _.findIndex(this.roomData.spawns, function(entry) {
+            let index = _.findIndex(room.memory.spawns, function(entry) {
                 return entry.spawnName === spawn.spawnName;
             });
-            this.roomData.spawns[index].spawning = creepConfig.spawnTime + 1;
+            room.memory.spawns[index].spawning = creepConfig.spawnTime + 1;
 
             this.kernel.addProcess(
                 creep.processToCreate,
@@ -107,9 +94,6 @@ export class SpawnManagerProcess extends Process {
             );
 
             return true;
-
-        } else if (result === ERR_NOT_ENOUGH_ENERGY) {
-            this.suspend = 2;
         }
 
         return false;

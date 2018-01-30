@@ -1,7 +1,6 @@
 import {Constants} from "../../core/Constants";
 import {Process} from "../../core/Process";
 
-// TODO
 export class InitProcess extends Process {
     public metaData: any;
 
@@ -33,11 +32,16 @@ export class InitProcess extends Process {
                 return;
             }
 
+            if (process.kernel.hasProcess(processName)) {
+                return;
+            }
+
             process.kernel.addProcess(
                 "roomSupervisor",
                 processName,
                 Constants.PRIORITY_HIGHEST,
                 {
+                    roomDataSet: false,
                     roomName: room.name
                 } as MetaData["roomSupervisor"]
             );

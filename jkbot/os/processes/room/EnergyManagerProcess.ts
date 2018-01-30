@@ -10,22 +10,15 @@ export class EnergyManagementProcess extends Process {
     public run() {
         let spawnManagerProcessName = "spawnManager-" + this.metaData.roomName;
 
-        if (!this.roomData) {
-            this.roomData = this.getRoomData(this.metaData.roomName);
-        }
-
         if (!this.kernel.hasProcess(spawnManagerProcessName)) {
             this.suspend = 1;
         }
 
         let spawnManager: SpawnManagerProcess = this.kernel.getProcessByName(spawnManagerProcessName)!;
+        let room = Game.rooms[this.metaData.roomName];
 
         let process = this;
-        _.forEach(this.roomData.sources, function(source) {
-
-            if (!process.roomData) {
-                process.roomData = process.getRoomData(process.metaData.roomName);
-            }
+        _.forEach(room.memory.sources, function(source) {
 
             if (source.isMinedBy.miners < 1) {
                 spawnManager.addCreepToSpawnQue({
@@ -36,7 +29,7 @@ export class EnergyManagementProcess extends Process {
                     type: "miner"
                 });
 
-                process.roomData.sources[source.id].isMinedBy.miners++;
+                room.memory.sources[source.id].isMinedBy.miners++;
 
             }
 
@@ -49,7 +42,7 @@ export class EnergyManagementProcess extends Process {
                     type: "hauler"
                 });
 
-                process.roomData.sources[source.id].isMinedBy.haulers++;
+                room.memory.sources[source.id].isMinedBy.haulers++;
             }
 
         });
@@ -59,37 +52,37 @@ export class EnergyManagementProcess extends Process {
 
         let room = Game.rooms[this.metaData.roomName];
 
-        if (!this.roomData) {
-            this.roomData = this.getRoomData(this.metaData.roomName);
+        if (!room || !room.controller) {
+            return false;
         }
 
         if (room.energyAvailable <= 250) {
             return false;
         }
 
-        if (this.roomData.rcl === 1) {
-            return this.roomData.spawns[0];
+        if (room.controller.level === 1) {
+            return room.memory.spawns[0];
         }
 
         // TODO modify for other RCLs
-        return this.roomData.spawns[0];
+        return room.memory.spawns[0];
     }
 
     public getDropOffPoint(): BasicObjectInfo | boolean {
         // TODO if room has storage => direct to storage
         // TODO rcl 2 => place container near spawn and use it as poor man's storage if needed
 
-        // are their spawns without energy?
+        let room = Game.rooms[this.metaData.roomName];
 
-        if (!this.roomData) {
-            this.roomData = this.getRoomData(this.metaData.roomName);
+        if (!room || !room.controller) {
+            return false;
         }
 
         let dropOff: BasicObjectInfo;
 
-        if (this.roomData.rcl <= 3) {
+        if (room.controller.level <= 3) {
 
-            dropOff = _.find(this.roomData.spawns, function(spawnInfo) {
+            dropOff = _.find(room.memory.spawns, function(spawnInfo) {
                 let spawn = Game.spawns[spawnInfo.spawnName];
                 return (spawn && spawn.energy < spawn.energyCapacity);
             })!;

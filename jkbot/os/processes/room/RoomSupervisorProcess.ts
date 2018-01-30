@@ -10,11 +10,7 @@ export class RoomSupervisorProcess extends Process {
 
         let room = Game.rooms[this.metaData.roomName];
 
-        let roomData = this.getRoomData(this.metaData.roomName);
-
-        if (room && roomData && room.controller && room.controller.my) {
-
-            roomData.rcl = room.controller.level;
+        if (room && room.controller && room.controller.my) {
 
             // ------------------------------------------------------------------- Spawn child process - energy manager
             let energyManagerName = "energyManager-" + this.metaData.roomName;
@@ -55,7 +51,7 @@ export class RoomSupervisorProcess extends Process {
         }
 
         // ----------------------------------------------------------------------------- generating room data processes
-        if (!this.kernel.hasRoomData(this.metaData.roomName)) {
+        if (!this.metaData.roomDataSet) {
             this.spawnChildProcess(
                 "staticRoomData",
                 "staticRoomData-" + this.metaData.roomName,
@@ -63,6 +59,8 @@ export class RoomSupervisorProcess extends Process {
                 {roomName: this.metaData.roomName},
                 false
             );
+
+            this.metaData.roomDataSet = true;
         }
 
     }
