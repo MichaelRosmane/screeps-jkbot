@@ -21,7 +21,7 @@ export class SpawnHelper {
             baseCost: 100,
             extension: [CARRY, MOVE],
             extensionCost: 100,
-            maxExtensionCount: 20
+            maxExtensionCount: 19
         },
         miner: {
             base: [WORK, CARRY, MOVE],
@@ -45,8 +45,6 @@ export class SpawnHelper {
                 parts.push(...type.extension);
                 cost += type.extensionCost;
                 extensionCount++;
-
-                console.log("spawn helper => cost: " + cost + " extensionCount: " + extensionCount);
             }
         }
 

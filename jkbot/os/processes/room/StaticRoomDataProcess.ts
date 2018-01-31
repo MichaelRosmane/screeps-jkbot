@@ -9,6 +9,8 @@ export class StaticRoomDataProcess extends Process {
     public run() {
         // ------------------------------------------------------------------------------------------------------ Setup
         let room = Game.rooms[this.metaData.roomName];
+        room.memory.sources = {};
+        room.memory.spawns = [];
         let process = this;
 
         // ------------------------------------------------------------------------------- Getting source info for room
