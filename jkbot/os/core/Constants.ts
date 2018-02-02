@@ -6,7 +6,7 @@ export class Constants {
     public static PRIORITY_MEDIUM: number = 50;
     public static PRIORITY_LOW: number = 30;
     public static PRIORITY_LOWEST: number = 10;
-    public static PRIORITY_LAST: number = 0;
+    public static PRIORITY_LAST: number = -1;
 
     public static SCRIPT_VERSION: string = "0.0.1";
 

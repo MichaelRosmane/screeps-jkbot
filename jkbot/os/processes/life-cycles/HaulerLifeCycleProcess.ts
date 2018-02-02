@@ -1,3 +1,5 @@
+import {isCreepAlive} from "@open-screeps/is-creep-alive";
+import {isMyRoom} from "@open-screeps/is-my-room";
 import {LifeCycleProcess} from "os/processes/LifeCycleProcess";
 import {EnergyManagementProcess} from "os/processes/room/EnergyManagerProcess";
 
@@ -9,44 +11,53 @@ export class HaulerLifeCycleProcess extends LifeCycleProcess {
     public parent: EnergyManagementProcess;
 
     public run(): void {
+
+        if (!isCreepAlive(this.metaData.creepName) || !isMyRoom(this.metaData.roomName)) {
+            this.completed = true;
+            return;
+        }
+
         let creep = Game.creeps[this.metaData.creepName];
         let target = this.metaData.target;
         let room = Game.rooms[this.metaData.roomName];
 
-        if (!creep) {
-            this.completed = true;
-            room.memory.sources[target.id].isMinedBy.haulers--;
-            return;
-        } else if (creep.spawning) {
+        if (creep.spawning) {
             this.suspend = 1;
             return;
         }
 
-        if (creep.ticksToLive < 20) {
+        if (creep.ticksToLive < 100) {
             room.memory.sources[target.id].isMinedBy.haulers--;
-            this.suspend = creep.ticksToLive;
             return;
         }
 
-        switch (this.metaData.next) {
+        switch (creep.memory.nextAction) {
             case "deposit":
                 this.switchToDepositProcess();
-                this.metaData.next = "";
+                creep.memory.nextAction = "";
                 return;
             case "pickup":
                 this.switchToPickUpProcess(this.metaData.target, RESOURCE_ENERGY);
-                this.metaData.next = "";
+                creep.memory.nextAction = "";
                 return;
         }
 
         if (_.sum(creep.carry) === 0) {
 
+            let pickup = this.parent.getPickUpForHauler();
+
+            if (typeof pickup === "boolean") {
+                return;
+            }
+
             this.metaData.dropOff = undefined;
-            if (creep.pos.getRangeTo(target.x, target.y) > 1) {
+            this.metaData.pickup = undefined;
+
+            if (creep.pos.getRangeTo(pickup.x, pickup.y) > 1) {
                 this.switchToMoveProcess(this.metaData.target);
-                this.metaData.next = "pickup";
+                creep.memory.nextAction = "pickup";
             } else {
-                this.switchToPickUpProcess(this.metaData.target, RESOURCE_ENERGY);
+                this.switchToPickUpProcess(pickup, RESOURCE_ENERGY);
             }
 
         } else {
@@ -60,7 +71,7 @@ export class HaulerLifeCycleProcess extends LifeCycleProcess {
 
                     if (creep.pos.getRangeTo(this.metaData.dropOff.x, this.metaData.dropOff.y) > 1) {
                         this.switchToMoveProcess(this.metaData.dropOff);
-                        this.metaData.next = "deposit";
+                        creep.memory.nextAction = "deposit";
                     } else {
                         this.switchToDepositProcess();
                         this.metaData.dropOff = undefined;
@@ -69,7 +80,7 @@ export class HaulerLifeCycleProcess extends LifeCycleProcess {
             } else {
                 if (creep.pos.getRangeTo(this.metaData.dropOff.x, this.metaData.dropOff.y) > 1) {
                     this.switchToMoveProcess(this.metaData.dropOff);
-                    this.metaData.next = "deposit";
+                    creep.memory.nextAction = "deposit";
                 } else {
                     this.switchToDepositProcess();
                     this.metaData.dropOff = undefined;

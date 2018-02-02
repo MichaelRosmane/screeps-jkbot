@@ -66,14 +66,21 @@ export class SpawnManagerProcess extends Process {
      * @returns {boolean}
      */
     private spawnCreep(spawn: SpawnObjectInfo, creep: CreepToSpawn) {
-        // ---------------------------------------------------------------------------------------------------------- Setup
+        // ------------------------------------------------------------------------------------------------------ Setup
         let room = Game.rooms[this.metaData.roomName];
         let name = creep.type + "-" + Game.time;
 
+        let baseMemory = {
+            intendedToMove: false,
+            nextAction: "",
+            previousPosition: {x: 0, y: 0},
+            stuck: 0
+        } as CreepMemory;
+
         let creepConfig = SpawnHelper.generateCreepFromBaseType(creep.type, room.energyAvailable);
 
-        // ------------------------------------------------------------------------ Trying to spawn creep & handling result
-        let result = Game.spawns[spawn.spawnName].spawnCreep(creepConfig.parts, name);
+        // -------------------------------------------------------------------- Trying to spawn creep & handling result
+        let result = Game.spawns[spawn.spawnName].spawnCreep(creepConfig.parts, name, {memory: baseMemory});
 
         if (result === OK) {
             let index = _.findIndex(room.memory.spawns, function(entry) {

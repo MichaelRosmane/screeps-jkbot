@@ -29,6 +29,10 @@ export class MoveProcess extends CreepActionProcess {
             range = 1;
         }
 
+        if (creep.pos.getRangeTo(this.metaData.target.x, this.metaData.target.y) <= range) {
+            this.completed = true;
+        }
+
         this.checkWithPreviousPosition(creep.pos.x, creep.pos.y);
 
         if (this.metaData.path === "" || typeof this.metaData.path === "undefined") {
@@ -44,12 +48,12 @@ export class MoveProcess extends CreepActionProcess {
             fullPath = Room.deserializePath(this.metaData.path);
         }
 
-        if (this.metaData.stuck > 4) {
+        if (creep.memory.stuck > 4) {
             this.log("Im really stuck", "error");
 
             this.metaData.path = "";
-            this.metaData.stuck = 0;
-            let unstuck = creep.moveTo(this.metaData.target.x, this.metaData.target.y);
+            creep.memory.stuck = 0;
+            creep.moveTo(this.metaData.target.x, this.metaData.target.y);
         } else if (fullPath.length > 0) {
 
             if (creep.moveByPath(fullPath) === OK) {
@@ -67,11 +71,12 @@ export class MoveProcess extends CreepActionProcess {
      * @param {number} currentY
      */
     private checkWithPreviousPosition(currentX: number, currentY: number) {
-        if (this.metaData.previousPositionX === currentX && this.metaData.previousPositionY === currentY) {
-            this.metaData.stuck++;
+        let creep = Game.creeps[this.metaData.creepName];
+
+        if (creep.memory.previousPosition.x === currentX && creep.memory.previousPosition.y === currentY) {
+            creep.memory.stuck++;
         } else {
-            this.metaData.previousPositionX = currentX;
-            this.metaData.previousPositionY = currentY;
+            creep.memory.previousPosition = {x: currentX, y: currentY};
         }
     }
 }

@@ -1,6 +1,14 @@
 import {Constants} from "os/core/Constants";
+
 import {Rcl2Constructions} from "os/helpers/construction/Rcl2Constructions";
-import {Process} from "../../core/Process";
+import {Rcl3Constructions} from "os/helpers/construction/Rcl3Constructions";
+import {Rcl4Constructions} from "os/helpers/construction/Rcl4Constructions";
+import {Rcl5Constructions} from "os/helpers/construction/Rcl5Constructions";
+import {Rcl6Constructions} from "os/helpers/construction/Rcl6Constructions";
+import {Rcl7Constructions} from "os/helpers/construction/Rcl7Constructions";
+import {Rcl8Constructions} from "os/helpers/construction/Rcl8Constructions";
+
+import {Process} from "os/core/Process";
 import {SpawnManagerProcess} from "./SpawnManagerProcess";
 
 export class ConstructionManagerProcess extends Process {
@@ -238,6 +246,24 @@ export class ConstructionManagerProcess extends Process {
             case 2:
                 buildings = Rcl2Constructions;
                 break;
+            case 3:
+                buildings = Rcl3Constructions;
+                break;
+            case 4:
+                buildings = Rcl4Constructions;
+                break;
+            case 5:
+                buildings = Rcl5Constructions;
+                break;
+            case 6:
+                buildings = Rcl6Constructions;
+                break;
+            case 7:
+                buildings = Rcl7Constructions;
+                break;
+            case 8:
+                buildings = Rcl8Constructions;
+                break;
         }
 
         if (buildings) {
@@ -254,20 +280,62 @@ export class ConstructionManagerProcess extends Process {
         let room = this.room;
 
         if (buildings.container) {
-            _.forEach(buildings.container, function(location: Point) {
+            _.forEach(buildings.container.pos, function(location: Point) {
                 room.createConstructionSite(base.x + location.x, base.y + location.y, STRUCTURE_CONTAINER);
             });
         }
 
         if (buildings.extension) {
-            _.forEach(buildings.extension, function(location: Point) {
+            _.forEach(buildings.extension.pos, function(location: Point) {
                 room.createConstructionSite(base.x + location.x, base.y + location.y, STRUCTURE_EXTENSION);
             });
         }
 
         if (buildings.road) {
-            _.forEach(buildings.road, function(location: Point) {
+            _.forEach(buildings.road.pos, function(location: Point) {
                 room.createConstructionSite(base.x + location.x, base.y + location.y, STRUCTURE_ROAD);
+            });
+        }
+
+        if (buildings.spawn) {
+            _.forEach(buildings.spawn.pos, function(location: Point) {
+                room.createConstructionSite(base.x + location.x, base.y + location.y, STRUCTURE_SPAWN);
+            });
+        }
+
+        if (buildings.tower) {
+            _.forEach(buildings.tower.pos, function(location: Point) {
+                room.createConstructionSite(base.x + location.x, base.y + location.y, STRUCTURE_TOWER);
+            });
+        }
+
+        if (buildings.link) {
+            _.forEach(buildings.link.pos, function(location: Point) {
+                room.createConstructionSite(base.x + location.x, base.y + location.y, STRUCTURE_LINK);
+            });
+        }
+
+        if (buildings.lab) {
+            _.forEach(buildings.lab.pos, function(location: Point) {
+                room.createConstructionSite(base.x + location.x, base.y + location.y, STRUCTURE_LAB);
+            });
+        }
+
+        if (buildings.terminal) {
+            _.forEach(buildings.terminal.pos, function(location: Point) {
+                room.createConstructionSite(base.x + location.x, base.y + location.y, STRUCTURE_TERMINAL);
+            });
+        }
+
+        if (buildings.nuker) {
+            _.forEach(buildings.nuker.pos, function(location: Point) {
+                room.createConstructionSite(base.x + location.x, base.y + location.y, STRUCTURE_NUKER);
+            });
+        }
+
+        if (buildings.observer) {
+            _.forEach(buildings.observer.pos, function(location: Point) {
+                room.createConstructionSite(base.x + location.x, base.y + location.y, STRUCTURE_OBSERVER);
             });
         }
     }

@@ -48,6 +48,26 @@ export class EnergyManagementProcess extends Process {
         });
     }
 
+    public getPickUpForHauler(): BasicObjectInfo | boolean {
+        let room = Game.rooms[this.metaData.roomName];
+
+        if (!room || !room.controller) {
+            return false;
+        }
+
+        if (room.controller.level === 1) {
+            let targets = room.find(FIND_DROPPED_RESOURCES);
+            if (targets.length) {
+                return {x: targets[0].pos.x, y: targets[0].pos.y, id: targets[0].id, roomName: room.name};
+            } else {
+                return false;
+            }
+        } else {
+            return false;
+        }
+
+    }
+
     public getPickUpPoint(): BasicObjectInfo | boolean {
 
         let room = Game.rooms[this.metaData.roomName];

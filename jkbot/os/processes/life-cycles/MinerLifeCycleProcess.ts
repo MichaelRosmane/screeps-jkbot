@@ -16,9 +16,18 @@ export class MinerLifeCycleProcess extends LifeCycleProcess {
         let creep = Game.creeps[this.metaData.creepName];
         let target = this.metaData.target;
 
+        if (creep.spawning) {
+            this.suspend = 1;
+            return;
+        }
+
+        if (creep.memory.nextAction === "mine") {
+            this.switchToMineProcess();
+        }
+
         if (creep.pos.getRangeTo(target.x, target.y) > 1) {
             this.switchToMoveProcess(this.metaData.target);
-            this.metaData.next = "harvest";
+            creep.memory.nextAction = "mine";
         } else {
             this.switchToMineProcess();
         }

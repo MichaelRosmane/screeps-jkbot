@@ -82,7 +82,7 @@ interface CreepConfig {
     spawnTime: number;
 }
 
-interface MoveMetaData  extends RoomMetaData,  TargetMetaData, CreepMetaData {
+interface MoveMetaData extends RoomMetaData, TargetMetaData, CreepMetaData {
     path: string;
     previousPositionX: number;
     previousPositionY: number;
@@ -166,7 +166,15 @@ interface SerializedRoomData {
 }
 
 interface ConstructionList {
-    container?: Point[];
-    extension?: Point[];
-    road?: Point[];
+    container?: { pos: Point[] };
+    extension?: { pos: Point[] };
+    road?: { pos: Point[] };
+    spawn?: { pos: Point[] };
+    tower?: { pos: Point[] };
+    storage?: { pos: Point[] };
+    link?: { pos: Point[] };
+    lab?: { pos: Point[] };
+    terminal?: { pos: Point[] };
+    nuker?: { pos: Point[] };
+    observer?: { pos: Point[] };
 }

@@ -7,6 +7,7 @@ export abstract class LifeCycleProcess extends Process {
      * Spawns a move process and suspends the current one
      *
      * @param {BasicObjectInfo} target
+     * @param {number} range
      */
     public switchToMoveProcess(target: BasicObjectInfo, range = 1) {
         this.spawnChildProcess(

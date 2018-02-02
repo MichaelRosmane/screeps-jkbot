@@ -2,6 +2,7 @@ interface CreepMemory {
     intendedToMove: boolean;
     previousPosition: Point;
     nextAction: string;
+    stuck: number;
 }
 
 interface RoomMemory {
