@@ -11,4 +11,5 @@ interface RoomMemory {
     builders: number;
     baseStartPoint?: Point;
     baseEndPoint?: Point;
+    rcl?: number;
 }

@@ -51,7 +51,6 @@ export class HaulerLifeCycleProcess extends LifeCycleProcess {
             }
 
             this.metaData.dropOff = undefined;
-            this.metaData.pickup = undefined;
 
             if (creep.pos.getRangeTo(pickup.x, pickup.y) > 1) {
                 this.switchToMoveProcess(this.metaData.target);

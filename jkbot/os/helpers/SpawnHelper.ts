@@ -26,8 +26,8 @@ export class SpawnHelper {
         miner: {
             base: [WORK, CARRY, MOVE],
             baseCost: 200,
-            extension: [WORK],
-            extensionCost: 100,
+            extension: [MOVE, WORK],
+            extensionCost: 150,
             maxExtensionCount: 5
         }
     };

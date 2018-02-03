@@ -8,6 +8,7 @@ import {Rcl6Constructions} from "os/helpers/construction/Rcl6Constructions";
 import {Rcl7Constructions} from "os/helpers/construction/Rcl7Constructions";
 import {Rcl8Constructions} from "os/helpers/construction/Rcl8Constructions";
 
+import {isMyRoom} from "@open-screeps/is-my-room";
 import {Process} from "os/core/Process";
 import {SpawnManagerProcess} from "./SpawnManagerProcess";
 
@@ -31,14 +32,28 @@ export class ConstructionManagerProcess extends Process {
     };
 
     public run() {
-        this.room = Game.rooms[this.metaData.roomName];
+        let room =  Game.rooms[this.metaData.roomName];
+
+        if (!isMyRoom(room)) {
+            return;
+        }
+
         this.sites = this.room.find(FIND_CONSTRUCTION_SITES);
 
         this.queBuilderIfNeeded();
         this.checkControllerWallSites();
-        this.placeConstructionSitesForBase();
 
+        // TODO improve code for this
         // this.buildRoadsToSources();
+
+        if (!room.memory.rcl) {
+            room.memory.rcl = room.controller.level;
+        }
+
+        if (room.memory.rcl !== room.controller.level) {
+            room.memory.rcl = room.controller.level;
+            this.placeConstructionSitesForBase();
+        }
 
         // this.roomMap = this.generateMap();
         // this.lookForSuitableSpot();
@@ -338,30 +353,37 @@ export class ConstructionManagerProcess extends Process {
                 room.createConstructionSite(base.x + location.x, base.y + location.y, STRUCTURE_OBSERVER);
             });
         }
+
+        if (buildings.storage) {
+            _.forEach(buildings.storage.pos, function(location: Point) {
+                room.createConstructionSite(base.x + location.x, base.y + location.y, STRUCTURE_STORAGE);
+            });
+        }
     }
 
-    /*
     private buildRoadsToSources() {
+
+        this.log("building roads to sources");
+
         let room = this.room;
+
+        if (!room) {
+            return;
+        }
 
         let visual = new RoomVisual(room.name);
 
-        if (!room.memory.baseStartPoint || room.memory.baseEndPoint) {
-            room.memory.baseStartPoint = {
-                x: room.memory.spawns[0].x - 6,
-                y: room.memory.spawns[0].y
-            };
+        let base =  {
+            x: room.memory.spawns[0].x - 6,
+            y: room.memory.spawns[0].y
+        };
 
-            room.memory.baseEndPoint = {
-                x: room.memory.spawns[0].x - 6 + 13,
-                y: room.memory.spawns[0].y + 13
-            };
-        }
+        let end = {
+            x: room.memory.spawns[0].x - 6 + 13,
+            y: room.memory.spawns[0].y + 13
+        };
 
-        let base = room.memory.baseStartPoint;
-        let end = room.memory.baseEndPoint;
-
-        visual.rect(base.x, base.y, 13, 13, {fill: "transparent", stroke: "#f00"});
+        visual.rect(base.x, base.y, 12, 12, {fill: "transparent", stroke: "#f00"});
 
         _.forEach(room.memory.sources, function(source) {
             let path = room.findPath(
@@ -374,7 +396,9 @@ export class ConstructionManagerProcess extends Process {
             );
 
             _.forEach(path, function(part) {
-                visual.text("r", part.x, part.y);
+
+                visual.text("?", part.x, part.y);
+
                 if ((part.x < base.x || part.x > end.x) && (part.y < base.y || part.y > end.y)) {
                     visual.text("R", part.x, part.y);
                 }
@@ -382,6 +406,5 @@ export class ConstructionManagerProcess extends Process {
             });
         });
     }
-    */
 
 }
