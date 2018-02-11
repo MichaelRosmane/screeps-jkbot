@@ -1,6 +1,7 @@
 import {Constants} from "os/core/Constants";
 import {SpawnManagerProcess} from "os/processes/room/SpawnManagerProcess";
 import {Process} from "../../core/Process";
+import {isMyRoom} from "@open-screeps/is-my-room";
 
 export class EnergyManagementProcess extends Process {
     public type = "energyManager";
@@ -17,38 +18,62 @@ export class EnergyManagementProcess extends Process {
         let spawnManager: SpawnManagerProcess = this.kernel.getProcessByName(spawnManagerProcessName)!;
         let room = Game.rooms[this.metaData.roomName];
 
+        if (!isMyRoom(room.name)) {
+            this.completed = true;
+            return;
+        }
+
         let process = this;
         _.forEach(room.memory.sources, function(source) {
 
-            if (source.isMinedBy.miners < 1) {
+            if (!room || !room.controller) {
+                return;
+            }
+
+            if (room.controller.level === 1 && source.isMinedBy.harvesters < 2) {
+
                 spawnManager.addCreepToSpawnQue({
                     meta: {target: {x: source.x, y: source.y, id: source.id}},
                     parentProcess: process.name,
                     priority: Constants.PRIORITY_MEDIUM,
-                    processToCreate: "minerLifeCycle",
-                    type: "miner"
+                    processToCreate: "harvesterLifeCycle",
+                    type: "harvester"
                 });
 
-                room.memory.sources[source.id].isMinedBy.miners++;
+                room.memory.sources[source.id].isMinedBy.harvesters++;
 
+            } else {
+
+                if (source.isMinedBy.miners < 1) {
+                    spawnManager.addCreepToSpawnQue({
+                        meta: {target: {x: source.x, y: source.y, id: source.id}},
+                        parentProcess: process.name,
+                        priority: Constants.PRIORITY_MEDIUM,
+                        processToCreate: "minerLifeCycle",
+                        type: "miner"
+                    });
+
+                    room.memory.sources[source.id].isMinedBy.miners++;
+
+                }
+
+                if (source.isMinedBy.haulers < 2) {
+                    spawnManager.addCreepToSpawnQue({
+                        meta: {target: {x: source.x, y: source.y, id: source.id}},
+                        parentProcess: process.name,
+                        priority: Constants.PRIORITY_MEDIUM,
+                        processToCreate: "haulerLifeCycle",
+                        type: "hauler"
+                    });
+
+                    room.memory.sources[source.id].isMinedBy.haulers++;
+                }
             }
-
-            if (source.isMinedBy.haulers < 2) {
-                spawnManager.addCreepToSpawnQue({
-                    meta: {target: {x: source.x, y: source.y, id: source.id}},
-                    parentProcess: process.name,
-                    priority: Constants.PRIORITY_MEDIUM,
-                    processToCreate: "haulerLifeCycle",
-                    type: "hauler"
-                });
-
-                room.memory.sources[source.id].isMinedBy.haulers++;
-            }
-
         });
     }
 
     public getPickUpForHauler(): BasicObjectInfo | boolean {
+
         let room = Game.rooms[this.metaData.roomName];
 
         if (!room || !room.controller) {

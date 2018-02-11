@@ -30,9 +30,10 @@ export abstract class Process {
 
         this.name = entry.name;
         this.priority = entry.priority;
-        this.metaData = entry.metaData;
         this.suspend = entry.suspend;
         this.hasAlreadyRun = false;
+
+        this.setMetaData(entry.metaData);
 
         if (entry.parent !== "") {
             this.parent = this.kernel.getProcessByName(entry.parent);
@@ -91,7 +92,7 @@ export abstract class Process {
      * @param meta
      * @param {boolean} suspendParent
      */
-    public spawnChildProcess<T extends ProcessTypes>(processType: T, name: string, priority: number, meta: any, suspendParent: boolean = false) {
+    protected spawnChildProcess<T extends ProcessTypes>(processType: T, name: string, priority: number, meta: any, suspendParent: boolean = false) {
         this.kernel.addProcess(processType, name, priority, meta, this.name);
 
         if (suspendParent) {
@@ -105,7 +106,11 @@ export abstract class Process {
      * @param {string} message
      * @param {string} type
      */
-    public log(message: string, type = "debug") {
+    protected log(message: string, type = "debug") {
         this.kernel.log(this.name, message, type);
+    }
+
+    protected setMetaData(meta: object) {
+        this.metaData = meta;
     }
 }

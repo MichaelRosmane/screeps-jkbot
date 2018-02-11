@@ -3,6 +3,10 @@ export class SpawnHelper {
     private static maxParts = 50;
 
     private static types: CreepTypes = {
+        bootstrap: {
+            base: [WORK, CARRY, MOVE, MOVE],
+            baseCost: 250
+        },
         builder: {
             base: [WORK, CARRY, MOVE, MOVE],
             baseCost: 250,

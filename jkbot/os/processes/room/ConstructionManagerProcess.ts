@@ -32,13 +32,13 @@ export class ConstructionManagerProcess extends Process {
     };
 
     public run() {
-        let room =  Game.rooms[this.metaData.roomName];
+        let room = Game.rooms[this.metaData.roomName];
 
-        if (!isMyRoom(room)) {
+        if (!isMyRoom(room) || !room.controller) {
             return;
         }
 
-        this.sites = this.room.find(FIND_CONSTRUCTION_SITES);
+        this.sites = room.find(FIND_CONSTRUCTION_SITES);
 
         this.queBuilderIfNeeded();
         this.checkControllerWallSites();
@@ -60,14 +60,9 @@ export class ConstructionManagerProcess extends Process {
     }
 
     public getConstructionSite(): BasicObjectInfo {
-
-        // TODO get build priorities based on RCL
-
         let site = this.sites.shift();
 
         if (site) {
-
-            this.log("construction site id:" + site.id, "error");
             return {
                 id: site.id,
                 roomName: this.metaData.roomName,
@@ -293,71 +288,78 @@ export class ConstructionManagerProcess extends Process {
         }
 
         let room = this.room;
+        let keepGoing = true;
 
-        if (buildings.container) {
-            _.forEach(buildings.container.pos, function(location: Point) {
-                room.createConstructionSite(base.x + location.x, base.y + location.y, STRUCTURE_CONTAINER);
-            });
-        }
-
-        if (buildings.extension) {
-            _.forEach(buildings.extension.pos, function(location: Point) {
-                room.createConstructionSite(base.x + location.x, base.y + location.y, STRUCTURE_EXTENSION);
-            });
-        }
-
-        if (buildings.road) {
-            _.forEach(buildings.road.pos, function(location: Point) {
-                room.createConstructionSite(base.x + location.x, base.y + location.y, STRUCTURE_ROAD);
-            });
-        }
-
-        if (buildings.spawn) {
-            _.forEach(buildings.spawn.pos, function(location: Point) {
-                room.createConstructionSite(base.x + location.x, base.y + location.y, STRUCTURE_SPAWN);
-            });
-        }
-
-        if (buildings.tower) {
-            _.forEach(buildings.tower.pos, function(location: Point) {
-                room.createConstructionSite(base.x + location.x, base.y + location.y, STRUCTURE_TOWER);
-            });
-        }
-
-        if (buildings.link) {
-            _.forEach(buildings.link.pos, function(location: Point) {
-                room.createConstructionSite(base.x + location.x, base.y + location.y, STRUCTURE_LINK);
-            });
-        }
-
-        if (buildings.lab) {
-            _.forEach(buildings.lab.pos, function(location: Point) {
-                room.createConstructionSite(base.x + location.x, base.y + location.y, STRUCTURE_LAB);
-            });
-        }
-
-        if (buildings.terminal) {
-            _.forEach(buildings.terminal.pos, function(location: Point) {
-                room.createConstructionSite(base.x + location.x, base.y + location.y, STRUCTURE_TERMINAL);
-            });
-        }
-
-        if (buildings.nuker) {
-            _.forEach(buildings.nuker.pos, function(location: Point) {
-                room.createConstructionSite(base.x + location.x, base.y + location.y, STRUCTURE_NUKER);
-            });
-        }
-
-        if (buildings.observer) {
-            _.forEach(buildings.observer.pos, function(location: Point) {
-                room.createConstructionSite(base.x + location.x, base.y + location.y, STRUCTURE_OBSERVER);
-            });
-        }
-
-        if (buildings.storage) {
+        if (keepGoing && buildings.storage) {
             _.forEach(buildings.storage.pos, function(location: Point) {
-                room.createConstructionSite(base.x + location.x, base.y + location.y, STRUCTURE_STORAGE);
+                keepGoing = (OK !== room.createConstructionSite(base.x + location.x, base.y + location.y, STRUCTURE_STORAGE));
             });
+        }
+
+        if (keepGoing && buildings.container) {
+            _.forEach(buildings.container.pos, function(location: Point) {
+                keepGoing = (OK !== room.createConstructionSite(base.x + location.x, base.y + location.y, STRUCTURE_CONTAINER));
+            });
+
+        }
+
+        if (keepGoing && buildings.tower) {
+            _.forEach(buildings.tower.pos, function(location: Point) {
+                keepGoing = (OK !== room.createConstructionSite(base.x + location.x, base.y + location.y, STRUCTURE_TOWER));
+            });
+        }
+
+        if (keepGoing && buildings.extension) {
+            _.forEach(buildings.extension.pos, function(location: Point) {
+                keepGoing = (OK !== room.createConstructionSite(base.x + location.x, base.y + location.y, STRUCTURE_EXTENSION));
+            });
+
+        }
+
+        if (keepGoing && buildings.link) {
+            _.forEach(buildings.link.pos, function(location: Point) {
+                keepGoing = (OK !== room.createConstructionSite(base.x + location.x, base.y + location.y, STRUCTURE_LINK));
+            });
+        }
+
+        if (keepGoing && buildings.terminal) {
+            _.forEach(buildings.terminal.pos, function(location: Point) {
+                keepGoing = (OK !== room.createConstructionSite(base.x + location.x, base.y + location.y, STRUCTURE_TERMINAL));
+            });
+
+        }
+
+        if (keepGoing && buildings.lab) {
+            _.forEach(buildings.lab.pos, function(location: Point) {
+                keepGoing = (OK !== room.createConstructionSite(base.x + location.x, base.y + location.y, STRUCTURE_LAB));
+            });
+        }
+
+        if (keepGoing && buildings.road) {
+            _.forEach(buildings.road.pos, function(location: Point) {
+                keepGoing = (OK !== room.createConstructionSite(base.x + location.x, base.y + location.y, STRUCTURE_ROAD));
+            });
+
+        }
+
+        if (keepGoing && buildings.spawn) {
+            _.forEach(buildings.spawn.pos, function(location: Point) {
+                keepGoing = (OK !== room.createConstructionSite(base.x + location.x, base.y + location.y, STRUCTURE_SPAWN));
+            });
+        }
+
+        if (keepGoing && buildings.nuker) {
+            _.forEach(buildings.nuker.pos, function(location: Point) {
+                keepGoing = (OK !== room.createConstructionSite(base.x + location.x, base.y + location.y, STRUCTURE_NUKER));
+            });
+
+        }
+
+        if (keepGoing && buildings.observer) {
+            _.forEach(buildings.observer.pos, function(location: Point) {
+                keepGoing = (OK !== room.createConstructionSite(base.x + location.x, base.y + location.y, STRUCTURE_OBSERVER));
+            });
+
         }
     }
 
@@ -373,7 +375,7 @@ export class ConstructionManagerProcess extends Process {
 
         let visual = new RoomVisual(room.name);
 
-        let base =  {
+        let base = {
             x: room.memory.spawns[0].x - 6,
             y: room.memory.spawns[0].y
         };

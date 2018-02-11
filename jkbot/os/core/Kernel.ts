@@ -55,7 +55,7 @@ export class Kernel {
 
     public processTable: ProcessTable = {};
 
-    private sortedProcesses: string[];
+    private sortedProcesses: string[] = [];
 
     private messageLog: MessageLogItem[] = [];
 
@@ -69,7 +69,7 @@ export class Kernel {
 
         this.log("init kernel", "running constructor");
 
-        this.setCpuLimit();
+        this.cpuLimit = this.defineCpuLimit();
         this.loadProcessTable();
 
         this.addProcess("init", "init", Constants.PRIORITY_FIRST, {});
@@ -97,17 +97,16 @@ export class Kernel {
     }
 
     /**
-     * Sets the CPU limit for the kernel
+     * Defines the CPU limit for the kernel
      */
-    public setCpuLimit() {
+    public defineCpuLimit() {
 
         // Simulator has no limit
         if (Game.cpu.limit === undefined) {
-            this.cpuLimit = 1000;
-            return;
+            return  1000;
         }
 
-        this.cpuLimit = Game.cpu.tickLimit * 0.95;
+        return Game.cpu.tickLimit * 0.95;
     }
 
     /**

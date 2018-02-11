@@ -3,6 +3,7 @@ interface CreepMemory {
     previousPosition: Point;
     nextAction: string;
     stuck: number;
+    target: BasicObjectInfo;
 }
 
 interface RoomMemory {

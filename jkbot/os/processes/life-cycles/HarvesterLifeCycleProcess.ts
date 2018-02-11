@@ -28,18 +28,18 @@ export class HarvesterLifeCycleProcess extends LifeCycleProcess {
             return;
         }
 
-        switch (this.metaData.next) {
+        switch (creep.memory.nextAction) {
             case "harvest":
                 this.switchToHarvestProcess();
-                this.metaData.next = "";
+                creep.memory.nextAction = "";
                 return;
             case "deposit":
                 this.switchToDepositProcess();
-                this.metaData.next = "";
+                creep.memory.nextAction = "";
                 return;
             case "upgrade":
                 this.switchToUpgradeProcess();
-                this.metaData.next = "";
+                creep.memory.nextAction = "";
                 return;
         }
 
@@ -48,7 +48,7 @@ export class HarvesterLifeCycleProcess extends LifeCycleProcess {
             this.metaData.dropOff = undefined;
             if (creep.pos.getRangeTo(target.x, target.y) > 1) {
                 this.switchToMoveProcess(this.metaData.target);
-                this.metaData.next = "harvest";
+                creep.memory.nextAction = "harvest";
             } else {
                 this.switchToHarvestProcess();
             }
@@ -56,7 +56,6 @@ export class HarvesterLifeCycleProcess extends LifeCycleProcess {
         } else {
 
             if (!this.metaData.dropOff) {
-                this.log("no dropoff");
                 let energyManager: EnergyManagementProcess = this.parent;
                 let newDropOff = energyManager.getDropOffPoint();
 
@@ -65,7 +64,7 @@ export class HarvesterLifeCycleProcess extends LifeCycleProcess {
 
                     if (creep.pos.getRangeTo(this.metaData.dropOff.x, this.metaData.dropOff.y) > 1) {
                         this.switchToMoveProcess(this.metaData.dropOff);
-                        this.metaData.next = "deposit";
+                        creep.memory.nextAction = "deposit";
                     } else {
                         this.switchToDepositProcess();
                         this.metaData.dropOff = undefined;
@@ -78,12 +77,12 @@ export class HarvesterLifeCycleProcess extends LifeCycleProcess {
                         x: room.controller.pos.x,
                         y: room.controller.pos.y
                     }, 2);
-                    this.metaData.next = "upgrade";
+                    creep.memory.nextAction = "upgrade";
                 }
             } else {
                 if (creep.pos.getRangeTo(this.metaData.dropOff.x, this.metaData.dropOff.y) > 1) {
                     this.switchToMoveProcess(this.metaData.dropOff);
-                    this.metaData.next = "deposit";
+                    creep.memory.nextAction = "deposit";
                 } else {
                     this.switchToDepositProcess();
                     this.metaData.dropOff = undefined;
