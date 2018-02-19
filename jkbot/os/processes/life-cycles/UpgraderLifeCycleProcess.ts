@@ -3,9 +3,9 @@ import {ConstructionManagerProcess} from "os/processes/room/ConstructionManagerP
 import {EnergyManagementProcess} from "os/processes/room/EnergyManagerProcess";
 import {Constants} from "../../core/Constants";
 
-export class BuilderLifeCycleProcess extends LifeCycleProcess {
-    public type = "builderLifeCycle";
-    public metaData: MetaData["builderLifeCycle"];
+export class UpgraderLifeCycleProcess extends LifeCycleProcess {
+    public type = "upgraderLifeCycle";
+    public metaData: MetaData["upgraderLifeCycle"];
 
     public parent: ConstructionManagerProcess;
 
@@ -17,11 +17,18 @@ export class BuilderLifeCycleProcess extends LifeCycleProcess {
         let energyManagerProcessName = "energyManager-" + this.metaData.roomName;
         let energyManager: EnergyManagementProcess = this.kernel.getProcessByName(energyManagerProcessName)!;
 
-        if (!creep || !room) {
-            this.markAsCompleted();
+        if (!creep || !room || !room.controller) {
+            this.completed = true;
+            room.memory.upgraders--;
             return;
         } else if (creep.spawning) {
             this.suspend = 3;
+            return;
+        }
+
+        if (creep.ticksToLive < 20) {
+            room.memory.builders--;
+            this.suspend = creep.ticksToLive;
             return;
         }
 
@@ -38,32 +45,21 @@ export class BuilderLifeCycleProcess extends LifeCycleProcess {
             }
 
         } else {
-            if (!this.parent.hasConstructionSites()) {
-                // TODO do something smart when no construction sites available
-                return;
+            if (creep.pos.getRangeTo(room.controller.pos.x, room.controller.pos.y) > 3) {
+                this.switchToMoveProcess(3);
+                creep.memory.nextAction = "upgrade";
+                creep.memory.target = {
+                    id: room.controller.id,
+                    roomName: this.metaData.roomName,
+                    x: room.controller.pos.x,
+                    y: room.controller.pos.y
+                };
             } else {
-                let target = this.parent.getConstructionSite();
-                creep.memory.target = target;
-
-                if (creep.pos.getRangeTo(target.x, target.y) < 3) {
-                    this.switchToBuildProcess();
-                } else {
-                    this.switchToMoveProcess(3);
-                }
+                this.switchToUpgradeProcess();
             }
         }
 
         creep.say(Constants.CREEP_SAY_SLEEPING);
-    }
-
-    protected markAsCompleted() {
-        let room = Game.rooms[this.metaData.roomName];
-
-        if (room) {
-            room.memory.builders--;
-        }
-
-        super.markAsCompleted();
     }
 
 }

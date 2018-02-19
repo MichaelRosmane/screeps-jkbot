@@ -2,6 +2,8 @@ import {Constants} from "os/core/Constants";
 import {SpawnHelper} from "os/helpers/SpawnHelper";
 import {Process} from "../../core/Process";
 
+import {isMyRoom} from "@open-screeps/is-my-room";
+
 export class SpawnManagerProcess extends Process {
 
     public type = "spawnManager";
@@ -18,14 +20,17 @@ export class SpawnManagerProcess extends Process {
         }
 
         // ---------------------------------------------------------------------------------------------------------- Setup
+        if (!isMyRoom(this.metaData.roomName)) {
+            this.completed = true;
+            return;
+        }
+
         let room = Game.rooms[this.metaData.roomName];
 
         // -------------------------------------------------------------------------- Check if a spawn is available for use
         let availableSpawns = _.filter(room.memory.spawns, function(spawn) {
             return (spawn.spawning === 0);
         });
-
-        this.log("available spawns: " + availableSpawns.length);
 
         // ------------------------------------- if a spawn is available, get highest prioriy creep and attempt to spawn it
         if (availableSpawns.length) {

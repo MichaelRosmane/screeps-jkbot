@@ -27,18 +27,33 @@ export class ConstructionManagerProcess extends Process {
 
     private sites: ConstructionSite[];
 
+    private buildingsToRepair: Structure[];
+
     private buildingPriorities = {
         rcl2: [STRUCTURE_CONTAINER, STRUCTURE_EXTENSION, STRUCTURE_CONTAINER]
     };
 
     public run() {
-        let room = Game.rooms[this.metaData.roomName];
-
-        if (!isMyRoom(room) || !room.controller) {
+        if (!isMyRoom(this.metaData.roomName)) {
+            this.markAsCompleted();
             return;
         }
 
+        let room = Game.rooms[this.metaData.roomName];
+
+        if (!room.controller) {
+            this.markAsCompleted();
+            return;
+        }
+
+        this.log("builders count: "+room.memory.builders);
+
         this.sites = room.find(FIND_CONSTRUCTION_SITES);
+        this.buildingsToRepair = room.find(FIND_STRUCTURES, {
+            filter(s: Structure) {
+                return (s.hits <= s.hitsMax * Constants.CREEP_REPAIR_TRESHOLD) && (s.structureType !== STRUCTURE_WALL);
+            }
+        });
 
         this.queBuilderIfNeeded();
         this.checkControllerWallSites();
@@ -52,22 +67,40 @@ export class ConstructionManagerProcess extends Process {
 
         if (room.memory.rcl !== room.controller.level) {
             room.memory.rcl = room.controller.level;
-            this.placeConstructionSitesForBase();
         }
+
+        this.placeConstructionSitesForBase();
 
         // this.roomMap = this.generateMap();
         // this.lookForSuitableSpot();
     }
 
-    public getConstructionSite(): BasicObjectInfo {
-        let site = this.sites.shift();
+    public getBuildingToRepair(): BasicObjectInfo {
 
-        if (site) {
+        if (this.buildingsToRepair.length) {
             return {
-                id: site.id,
+                id: this.buildingsToRepair[0].id,
                 roomName: this.metaData.roomName,
-                x: site.pos.x,
-                y: site.pos.y
+                x: this.buildingsToRepair[0].pos.x,
+                y: this.buildingsToRepair[0].pos.y
+            } as BasicObjectInfo;
+        } else {
+            return {x: 0, y: 0, id: "", roomName: ""};
+        }
+
+    }
+
+    public hasBuildingToRepair() {
+        return (this.buildingsToRepair.length > 0);
+    }
+
+    public getConstructionSite(): BasicObjectInfo {
+        if (this.sites.length) {
+            return {
+                id: this.sites[0].id,
+                roomName: this.metaData.roomName,
+                x: this.sites[0].pos.x,
+                y: this.sites[0].pos.y
             };
         } else {
             return {x: 0, y: 0, id: "", roomName: ""};
@@ -101,15 +134,17 @@ export class ConstructionManagerProcess extends Process {
     }
 
     private checkControllerWallSites() {
-        if ((Game.time % 200 !== 0) || !this.room.controller || !this.room.controller.my || (this.room.controller.level === 1)) {
+        let room = Game.rooms[this.metaData.roomName];
+
+        if ((Game.time % 200 !== 0) || !room.controller || !room.controller.my || (room.controller.level === 1)) {
             return;
         }
 
-        let pos = this.room.controller.pos;
+        let pos = room.controller.pos;
 
         for (let x = -1; x <= 1; x++) {
             for (let y = -1; y <= 1; y++) {
-                let result = this.room.createConstructionSite(pos.x + x, pos.y + y, STRUCTURE_WALL);
+                room.createConstructionSite(pos.x + x, pos.y + y, STRUCTURE_WALL);
             }
         }
     }
@@ -235,7 +270,7 @@ export class ConstructionManagerProcess extends Process {
     private placeConstructionSitesForBase() {
         let room = Game.rooms[this.metaData.roomName];
 
-        if (!room || !room.controller) {
+        if (!room || !room.controller || this.hasConstructionSites()) {
             return;
         }
 
@@ -283,35 +318,43 @@ export class ConstructionManagerProcess extends Process {
 
     private createConstructionSitesForBuildings(buildings: ConstructionList, base: Point) {
 
-        if (!this.room) {
+        let room = Game.rooms[this.metaData.roomName];
+        let keepGoing = true;
+
+        if (!room || !room.controller) {
             return;
         }
-
-        let room = this.room;
-        let keepGoing = true;
 
         if (keepGoing && buildings.storage) {
             _.forEach(buildings.storage.pos, function(location: Point) {
                 keepGoing = (OK !== room.createConstructionSite(base.x + location.x, base.y + location.y, STRUCTURE_STORAGE));
-            });
-        }
 
-        if (keepGoing && buildings.container) {
-            _.forEach(buildings.container.pos, function(location: Point) {
-                keepGoing = (OK !== room.createConstructionSite(base.x + location.x, base.y + location.y, STRUCTURE_CONTAINER));
+                return keepGoing;
             });
-
         }
 
         if (keepGoing && buildings.tower) {
             _.forEach(buildings.tower.pos, function(location: Point) {
                 keepGoing = (OK !== room.createConstructionSite(base.x + location.x, base.y + location.y, STRUCTURE_TOWER));
+
+                return keepGoing;
             });
         }
 
         if (keepGoing && buildings.extension) {
             _.forEach(buildings.extension.pos, function(location: Point) {
                 keepGoing = (OK !== room.createConstructionSite(base.x + location.x, base.y + location.y, STRUCTURE_EXTENSION));
+
+                return keepGoing;
+            });
+
+        }
+
+        if (keepGoing && buildings.container) {
+            _.forEach(buildings.container.pos, function(location: Point) {
+                keepGoing = (OK !== room.createConstructionSite(base.x + location.x, base.y + location.y, STRUCTURE_CONTAINER));
+
+                return keepGoing;
             });
 
         }
@@ -319,12 +362,16 @@ export class ConstructionManagerProcess extends Process {
         if (keepGoing && buildings.link) {
             _.forEach(buildings.link.pos, function(location: Point) {
                 keepGoing = (OK !== room.createConstructionSite(base.x + location.x, base.y + location.y, STRUCTURE_LINK));
+
+                return keepGoing;
             });
         }
 
         if (keepGoing && buildings.terminal) {
             _.forEach(buildings.terminal.pos, function(location: Point) {
                 keepGoing = (OK !== room.createConstructionSite(base.x + location.x, base.y + location.y, STRUCTURE_TERMINAL));
+
+                return keepGoing;
             });
 
         }
@@ -332,12 +379,15 @@ export class ConstructionManagerProcess extends Process {
         if (keepGoing && buildings.lab) {
             _.forEach(buildings.lab.pos, function(location: Point) {
                 keepGoing = (OK !== room.createConstructionSite(base.x + location.x, base.y + location.y, STRUCTURE_LAB));
+                return keepGoing;
             });
         }
 
         if (keepGoing && buildings.road) {
             _.forEach(buildings.road.pos, function(location: Point) {
                 keepGoing = (OK !== room.createConstructionSite(base.x + location.x, base.y + location.y, STRUCTURE_ROAD));
+
+                return keepGoing;
             });
 
         }
@@ -345,12 +395,16 @@ export class ConstructionManagerProcess extends Process {
         if (keepGoing && buildings.spawn) {
             _.forEach(buildings.spawn.pos, function(location: Point) {
                 keepGoing = (OK !== room.createConstructionSite(base.x + location.x, base.y + location.y, STRUCTURE_SPAWN));
+
+                return keepGoing;
             });
         }
 
         if (keepGoing && buildings.nuker) {
             _.forEach(buildings.nuker.pos, function(location: Point) {
                 keepGoing = (OK !== room.createConstructionSite(base.x + location.x, base.y + location.y, STRUCTURE_NUKER));
+
+                return keepGoing;
             });
 
         }
@@ -358,6 +412,8 @@ export class ConstructionManagerProcess extends Process {
         if (keepGoing && buildings.observer) {
             _.forEach(buildings.observer.pos, function(location: Point) {
                 keepGoing = (OK !== room.createConstructionSite(base.x + location.x, base.y + location.y, STRUCTURE_OBSERVER));
+
+                return keepGoing;
             });
 
         }

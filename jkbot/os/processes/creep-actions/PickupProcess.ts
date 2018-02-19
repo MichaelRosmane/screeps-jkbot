@@ -1,4 +1,6 @@
 import {CreepActionProcess} from "os/processes/CreepActionProcess";
+import {Constants} from "os/core/Constants";
+import {isCreepAlive} from "@open-screeps/is-creep-alive";
 
 export class PickupProcess extends CreepActionProcess {
     public type = "pickup";
@@ -7,29 +9,31 @@ export class PickupProcess extends CreepActionProcess {
 
     public run(): void {
 
-        let room = Game.rooms[this.metaData.roomName];
-        let creep = Game.creeps[this.metaData.creepName];
-        let target = this.metaData.target;
-
-        if (!creep || !room) {
+        if (!isCreepAlive(this.metaData.creepName)) {
             this.markAsCompleted();
             return;
         }
+
+        let creep = Game.creeps[this.metaData.creepName];
+        let target = creep.memory.target;
+
 
         if (!target) {
             this.markAsCompleted();
             return;
         }
 
-        let targetStructure: Structure | null = Game.getObjectById(target.id);
+        creep.say(Constants.CREEP_SAY_PICKUP);
 
-        if (targetStructure) {
-            let result = creep.withdraw(targetStructure, RESOURCE_ENERGY);
+        let targetResource: Resource | null = Game.getObjectById(target.id);
+
+        if (targetResource) {
+            creep.pickup(targetResource);
+        } else {
+            this.markAsCompleted();
         }
 
-        if (_.sum(creep.carry) < creep.carryCapacity) {
-            this.suspend = 2;
-        } else {
+        if (_.sum(creep.carry) === creep.carryCapacity) {
             this.markAsCompleted();
         }
     }

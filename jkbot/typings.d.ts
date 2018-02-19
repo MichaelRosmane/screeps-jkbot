@@ -1,3 +1,5 @@
+
+
 // -------------------------------------------------------------------------------------------------------------- Types
 type ProcessTypes =
     "init"
@@ -20,7 +22,11 @@ type ProcessTypes =
     | "pickup"
     | "mine"
     | "minerLifeCycle"
-    | "haulerLifeCycle";
+    | "haulerLifeCycle"
+    | "bootstrapperLifeCycle"
+    | "repair"
+    | "upgraderLifeCycle"
+    | "withdraw";
 
 // --------------------------------------------------------------------------------------------------------- Interfaces
 
@@ -41,10 +47,12 @@ interface BasicObjectInfo {
 
 interface SourceObjectInfo extends BasicObjectInfo {
     isMinedBy: {
-        harvesters: number;
+        bootstrappers: number;
         miners: number;
         haulers: number;
     };
+    availableSpots: number;
+    optimalSpot: Point;
 }
 
 interface SpawnObjectInfo extends BasicObjectInfo {
@@ -67,6 +75,10 @@ interface SpawnMetaData {
 type PickupMetaData = RoomMetaData & CreepMetaData & TargetMetaData & {
     resourceType: ResourceConstant;
 };
+
+interface BootstrapperLifeCycleMetaData extends RoomMetaData, CreepMetaData {
+    target: BasicObjectInfo;
+}
 
 interface CreepBaseType {
     base: BodyPartConstant[];
@@ -134,10 +146,12 @@ interface MetaData {
     energyManager: RoomMetaData;
     spawnManager: RoomMetaData & SpawnMetaData;
 
+    bootstrapperLifeCycle: BootstrapperLifeCycleMetaData;
     haulerLifeCycle: RoomMetaData & TargetMetaData & CreepMetaData & DropOffMetaData & NextAction;
     harvesterLifeCycle: RoomMetaData & TargetMetaData & CreepMetaData & DropOffMetaData & NextAction;
     builderLifeCycle: RoomMetaData & TargetMetaData & CreepMetaData & NextAction;
     minerLifeCycle: RoomMetaData & TargetMetaData & CreepMetaData & NextAction;
+    upgraderLifeCycle: RoomMetaData & CreepMetaData;
 
     move: MoveMetaData;
     mine: RoomMetaData & TargetMetaData & CreepMetaData;
@@ -146,6 +160,8 @@ interface MetaData {
     upgrade: RoomMetaData & CreepMetaData;
     pickup: PickupMetaData;
     build: RoomMetaData & TargetMetaData & CreepMetaData;
+    repair: RoomMetaData & TargetMetaData & CreepMetaData;
+    withdraw: RoomMetaData & CreepMetaData;
 }
 
 interface SerializedProcess {

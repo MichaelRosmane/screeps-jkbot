@@ -5,11 +5,13 @@ import {MineProcess} from "os/processes/creep-actions/MineProcess";
 import {MoveProcess} from "os/processes/creep-actions/MoveProcess";
 import {PickupProcess} from "os/processes/creep-actions/PickupProcess";
 import {UpgradeProcess} from "os/processes/creep-actions/UpgradeProcess";
+import {RepairProcess} from "os/processes/creep-actions/RepairProcess";
+import {WithdrawProcess} from "os/processes/creep-actions/WithdrawProcess";
 
+import {BootstrapperLifeCycleProcess} from "os/processes/life-cycles/BootstrapperLifeCycleProcess";
 import {BuilderLifeCycleProcess} from "os/processes/life-cycles/BuilderLifeCycleProcess";
-import {HarvesterLifeCycleProcess} from "os/processes/life-cycles/HarvesterLifeCycleProcess";
-import {HaulerLifeCycleProcess} from "os/processes/life-cycles/HaulerLifeCycleProcess";
 import {MinerLifeCycleProcess} from "os/processes/life-cycles/MinerLifeCycleProcess";
+import {UpgraderLifeCycleProcess} from "os/processes/life-cycles/UpgraderLifeCycleProcess";
 
 import {ConstructionManagerProcess} from "os/processes/room/ConstructionManagerProcess";
 import {EnergyManagementProcess} from "os/processes/room/EnergyManagerProcess";
@@ -24,25 +26,27 @@ import {Constants} from "./Constants";
 import {Process} from "./Process";
 
 export const processTypes = {
+    bootstrapperLifeCycle: BootstrapperLifeCycleProcess,
     build: BuildProcess,
     builderLifeCycle: BuilderLifeCycleProcess,
     constructionManager: ConstructionManagerProcess,
     deposit: DepositProcess,
     energyManager: EnergyManagementProcess,
     harvest: HarvestProcess,
-    harvesterLifeCycle: HarvesterLifeCycleProcess,
-    haulerLifeCycle: HaulerLifeCycleProcess,
     init: InitProcess,
     memoryManager: MemoryManagerProcess,
     mine: MineProcess,
     minerLifeCycle: MinerLifeCycleProcess,
     move: MoveProcess,
     pickup: PickupProcess,
+    repair: RepairProcess,
     roomSupervisor: RoomSupervisorProcess,
     spawnManager: SpawnManagerProcess,
     staticRoomData: StaticRoomDataProcess,
     suspension: SuspensionProcess,
-    upgrade: UpgradeProcess
+    upgrade: UpgradeProcess,
+    upgraderLifeCycle: UpgraderLifeCycleProcess,
+    withdraw: WithdrawProcess
 } as { [type: string]: any };
 
 interface ProcessTable {
@@ -103,7 +107,7 @@ export class Kernel {
 
         // Simulator has no limit
         if (Game.cpu.limit === undefined) {
-            return  1000;
+            return 1000;
         }
 
         return Game.cpu.tickLimit * 0.95;
@@ -154,6 +158,16 @@ export class Kernel {
         return this.processTable[name];
     }
 
+    public getProcessByRoomAndType(room: string, type: string): Process | null {
+        let processName = type + "-" + room;
+
+        if (this.hasProcess(processName)) {
+            return this.processTable[processName];
+        } else {
+            return null;
+        }
+    }
+
     /**
      * Returns the process with the highest priority
      *
@@ -184,7 +198,8 @@ export class Kernel {
             try {
                 processToRun.run();
             } catch (e) {
-                this.log(processToRun.name, "ERROR: " + e, "error");
+                this.log(processToRun.name, "ERROR: " + e.message, "error");
+                this.log(processToRun.name, "STACK: " + e.stack, "error");
             }
         }
 
@@ -302,6 +317,22 @@ export class Kernel {
         this.messageLog = [];
 
         return output;
+    }
+
+    /**
+     * Returns the spawn maanger process for a given room
+     *
+     * @param {string} roomName
+     * @returns {SpawnManagerProcess | any}
+     */
+    public getSpawnManagerForRoom(roomName: string): SpawnManagerProcess | false {
+        let processName = "spawnManager-" + roomName;
+
+        if (this.hasProcess(processName)) {
+            return this.processTable[processName] as SpawnManagerProcess;
+        } else {
+            return false;
+        }
     }
 
 }

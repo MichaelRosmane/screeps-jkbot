@@ -13,7 +13,7 @@ export class InitProcess extends Process {
         this.kernel.addProcess(
             "memoryManager",
             "memoryManager",
-            Constants.PRIORITY_FIRST,
+            Constants.PRIORITY_LAST,
             {}
         );
 

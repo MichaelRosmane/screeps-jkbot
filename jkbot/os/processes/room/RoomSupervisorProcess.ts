@@ -60,7 +60,7 @@ export class RoomSupervisorProcess extends Process {
                 false
             );
 
-            this.metaData.roomDataSet = true;
+            //this.metaData.roomDataSet = true;
         }
 
     }

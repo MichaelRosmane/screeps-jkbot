@@ -1,4 +1,5 @@
 import {CreepActionProcess} from "os/processes/CreepActionProcess";
+import {Constants} from "../../core/Constants";
 
 export class UpgradeProcess extends CreepActionProcess {
 
@@ -14,6 +15,9 @@ export class UpgradeProcess extends CreepActionProcess {
             this.markAsCompleted();
             return;
         }
+
+
+        creep.say(Constants.CREEP_SAY_UPGRADING);
 
         if (_.sum(creep.carry) > 0) {
             creep.upgradeController(room.controller);

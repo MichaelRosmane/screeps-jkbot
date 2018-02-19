@@ -1,4 +1,5 @@
 import {CreepActionProcess} from "os/processes/CreepActionProcess";
+import {Constants} from "../../core/Constants";
 
 export class MoveProcess extends CreepActionProcess {
     public type = "move";
@@ -23,13 +24,15 @@ export class MoveProcess extends CreepActionProcess {
         creep.memory.intendedToMove = true;
         creep.memory.nextAction = "test";
 
+        creep.say(Constants.CREEP_SAY_MOVING);
+
         if (this.metaData.range) {
             range = this.metaData.range;
         } else {
             range = 1;
         }
 
-        if (creep.pos.getRangeTo(this.metaData.target.x, this.metaData.target.y) <= range) {
+        if (creep.pos.getRangeTo(creep.memory.target.x, creep.memory.target.y) <= range) {
             this.completed = true;
         }
 
@@ -37,7 +40,7 @@ export class MoveProcess extends CreepActionProcess {
 
         if (this.metaData.path === "" || typeof this.metaData.path === "undefined") {
 
-            let targetPos = new RoomPosition(this.metaData.target.x, this.metaData.target.y, this.metaData.roomName);
+            let targetPos = new RoomPosition(creep.memory.target.x, creep.memory.target.y, this.metaData.roomName);
 
             this.metaData.previousPositionX = NaN;
             this.metaData.previousPositionY = NaN;
@@ -53,7 +56,7 @@ export class MoveProcess extends CreepActionProcess {
 
             this.metaData.path = "";
             creep.memory.stuck = 0;
-            creep.moveTo(this.metaData.target.x, this.metaData.target.y);
+            creep.moveTo(creep.memory.target.x, creep.memory.target.y);
         } else if (fullPath.length > 0) {
 
             if (creep.moveByPath(fullPath) === OK) {

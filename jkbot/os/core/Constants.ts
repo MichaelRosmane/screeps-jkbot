@@ -10,6 +10,11 @@ export class Constants {
 
     public static SCRIPT_VERSION: string = "0.0.1";
 
+    public static CREEP_REPAIR_TRESHOLD: number = 0.75;
+    public static TOWER_REPAIR_TRESHOLD: number = 0.85;
+
+    public static MAX_BOOTSTRAPPERS: number = 3;
+
     public static RCL2_WALL_HITS: number = 1000;
     public static RCL3_WALL_HITS: number = 10000;
     public static RCL4_WALL_HITS: number = 30000;
@@ -17,4 +22,14 @@ export class Constants {
     public static RCL6_WALL_HITS: number = 1000000;
     public static RCL7_WALL_HITS: number = 10000000;
     public static RCL8_WALL_HITS: number = 100000000;
+
+    public static CREEP_SAY_MINING: string = "🔨";
+    public static CREEP_SAY_DEPOSITING: string = "🎁";
+    public static CREEP_SAY_PICKUP: string = "📥";
+    public static CREEP_SAY_WITHDRAWING: string = "📥";
+    public static CREEP_SAY_SLEEPING: string = "💤";
+    public static CREEP_SAY_BUILDING: string = "🏗";
+    public static CREEP_SAY_REPAIRING: string = "🚧";
+    public static CREEP_SAY_UPGRADING: string = "➕";
+    public static CREEP_SAY_MOVING: string = "🎯";
 }

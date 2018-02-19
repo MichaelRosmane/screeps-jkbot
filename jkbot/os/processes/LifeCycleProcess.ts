@@ -9,7 +9,7 @@ export abstract class LifeCycleProcess extends Process {
      * @param {BasicObjectInfo} target
      * @param {number} range
      */
-    public switchToMoveProcess(target: BasicObjectInfo, range = 1) {
+    public switchToMoveProcess(range = 1) {
         this.spawnChildProcess(
             "move",
             "move-" + this.metaData.creepName,
@@ -17,8 +17,7 @@ export abstract class LifeCycleProcess extends Process {
             {
                 creepName: this.metaData.creepName,
                 range,
-                roomName: this.metaData.roomName,
-                target
+                roomName: this.metaData.roomName
             },
             true
         );
@@ -34,8 +33,23 @@ export abstract class LifeCycleProcess extends Process {
             Constants.PRIORITY_MEDIUM,
             {
                 creepName: this.metaData.creepName,
-                roomName: this.metaData.roomName,
-                target: this.metaData.target
+                roomName: this.metaData.roomName
+            },
+            true
+        );
+    }
+
+    /**
+     * Spawns a repair process and suspends the current one
+     */
+    public switchToRepairProcess() {
+        this.spawnChildProcess(
+            "repair",
+            "repair-" + this.metaData.creepName,
+            Constants.PRIORITY_MEDIUM,
+            {
+                creepName: this.metaData.creepName,
+                roomName: this.metaData.roomName
             },
             true
         );
@@ -68,7 +82,6 @@ export abstract class LifeCycleProcess extends Process {
             Constants.PRIORITY_MEDIUM,
             {
                 creepName: this.metaData.creepName,
-                dropOff: this.metaData.dropOff,
                 roomName: this.metaData.roomName
             },
             true
@@ -94,15 +107,14 @@ export abstract class LifeCycleProcess extends Process {
     /**
      * Spawns a build process and suspends the current one
      */
-    public switchToBuildProcess(target: BasicObjectInfo) {
+    public switchToBuildProcess() {
         this.spawnChildProcess(
             "build",
             "build-" + this.metaData.creepName,
             Constants.PRIORITY_MEDIUM,
             {
                 creepName: this.metaData.creepName,
-                roomName: this.metaData.roomName,
-                target
+                roomName: this.metaData.roomName
             },
             true
         );
@@ -111,16 +123,31 @@ export abstract class LifeCycleProcess extends Process {
     /**
      * Spawns a pickup process and suspends the current one
      */
-    public switchToPickUpProcess(target: BasicObjectInfo, resourceType: ResourceConstant) {
+    public switchToPickUpProcess() {
         this.spawnChildProcess(
             "pickup",
             "pickup-" + this.metaData.creepName,
             Constants.PRIORITY_MEDIUM,
             {
                 creepName: this.metaData.creepName,
+                roomName: this.metaData.roomName
+            },
+            true
+        );
+    }
+
+    /**
+     * Spawns a withdraw process and suspends the current one
+     */
+    public switchWithdrawProcess(resourceType: ResourceConstant) {
+        this.spawnChildProcess(
+            "withdraw",
+            "withdraw-" + this.metaData.creepName,
+            Constants.PRIORITY_MEDIUM,
+            {
+                creepName: this.metaData.creepName,
                 resource: resourceType,
-                roomName: this.metaData.roomName,
-                target
+                roomName: this.metaData.roomName
             },
             true
         );

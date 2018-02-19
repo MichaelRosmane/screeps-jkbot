@@ -113,4 +113,17 @@ export abstract class Process {
     protected setMetaData(meta: object) {
         this.metaData = meta;
     }
+
+    /**
+     * Marks the current process as completed and (optionally) resumes the parent
+     *
+     * @param {boolean} resumeParent
+     */
+    protected markAsCompleted(resumeParent: boolean = true) {
+        this.completed = true;
+
+        if (resumeParent) {
+            this.resumeParent();
+        }
+    }
 }
