@@ -1,4 +1,4 @@
-export const Rcl2Constructions: ConstructionList = {
+export const Rcl3Constructions: ConstructionList = {
     container: {
         pos: [
             {
@@ -26,8 +26,28 @@ export const Rcl2Constructions: ConstructionList = {
                 y: 1
             },
             {
+                x: 3,
+                y: 1
+            },
+            {
                 x: 1,
                 y: 2
+            },
+            {
+                x: 4,
+                y: 2
+            },
+            {
+                x: 1,
+                y: 3
+            },
+            {
+                x: 4,
+                y: 3
+            },
+            {
+                x: 3,
+                y: 4
             }
         ]
     },
@@ -54,7 +74,15 @@ export const Rcl2Constructions: ConstructionList = {
                 y: 1
             },
             {
+                x: 4,
+                y: 1
+            },
+            {
                 x: 2,
+                y: 2
+            },
+            {
+                x: 5,
                 y: 2
             },
             {
@@ -62,7 +90,15 @@ export const Rcl2Constructions: ConstructionList = {
                 y: 3
             },
             {
+                x: 6,
+                y: 3
+            },
+            {
                 x: 4,
+                y: 4
+            },
+            {
+                x: 6,
                 y: 4
             },
             {
@@ -76,6 +112,14 @@ export const Rcl2Constructions: ConstructionList = {
             {
                 x: 6,
                 y: 0
+            }
+        ]
+    },
+    tower: {
+        pos: [
+            {
+                x: 3,
+                y: 2
             }
         ]
     }

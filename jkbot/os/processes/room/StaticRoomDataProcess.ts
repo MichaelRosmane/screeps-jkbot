@@ -1,61 +1,83 @@
-import { MetaData, SerializedRoomData } from "../../../typings";
-import { Process } from "../../core/Process";
-import { RoomData } from "../../core/RoomData";
-import { MemoryManagerProcess } from "../system/MemoryManagerProcess";
+import {isMyRoom} from "@open-screeps/is-my-room";
+import {Process} from "../../core/Process";
 
 export class StaticRoomDataProcess extends Process {
 
-  public type = "staticRoomData";
+    public type = "staticRoomData";
 
-  public metaData: MetaData["staticRoomData"];
+    public metaData: MetaData["staticRoomData"];
 
-  public run() {
-    // ---------------------------------------------------------------------------------------------------------- Setup
-    let data = {} as SerializedRoomData;
-    let room = Game.rooms[this.metaData.roomName];
-    let process = this;
+    public run() {
+        if (!isMyRoom(this.metaData.roomName)) {
+            this.markAsCompleted();
+            return;
+        }
 
-    data.sources = [];
-    data.spawns = [];
-    data.rcl = 1;
+        // ------------------------------------------------------------------------------------------------------ Setup
+        let room = Game.rooms[this.metaData.roomName];
+        room.memory.sources = {};
+        room.memory.spawns = [];
+        let process = this;
+        let origin = new RoomPosition(25, 25, this.metaData.roomName);
 
-    // ----------------------------------------------------------------------------------- Getting source info for room
-    let sources = room.find(FIND_SOURCES);
-    _.forEach(sources, function(source: Source) {
+        // ------------------------------------------------------------------------------------ Getting spawns for room
+        let spawns = Game.spawns;
+        _.forEach(spawns, function(spawn: StructureSpawn) {
 
-      data.sources.push({
-        id: source.id,
-        isMinedBy: {
-          harvesters: 0,
-          miners: 0
-        },
-        roomName: process.metaData.roomName,
-        x: source.pos.x,
-        y: source.pos.y
-      });
-    });
+            if (spawn.room.name !== process.metaData.roomName) {
+                return;
+            }
 
-     // ---------------------------------------------------------------------------------------- Getting spawns for room
-    let spawns = Game.spawns;
-    _.forEach(spawns, function(spawn: StructureSpawn) {
+            origin = spawn.pos;
 
-      if (spawn.room.name !== process.metaData.roomName) {
-        return;
-      }
+            room.memory.spawns.push({
+                id: spawn.id,
+                roomName: process.metaData.roomName,
+                spawnName: spawn.name,
+                spawning: 0,
+                x: spawn.pos.x,
+                y: spawn.pos.y
+            });
+        });
 
-      data.spawns.push({
-         id: spawn.id,
-         roomName: process.metaData.roomName,
-         spawnName: spawn.name,
-         spawning: false,
-         x: spawn.pos.x,
-         y: spawn.pos.y
-       });
-   });
+        // ------------------------------------------------------------------------------- Getting source info for room
+        let sources = room.find(FIND_SOURCES);
+        _.forEach(sources, function(source: Source) {
 
-    // TODO get available spots at source for planning purposes
+            let availableSpots = 0;
+            let sourceArea = room.lookAtArea(source.pos.y - 1, source.pos.x - 1, source.pos.y + 1, source.pos.x + 1, true);
 
-    this.kernel.addRoomData(this.metaData.roomName, data.sources, data.spawns, data.rcl );
-    this.completed = true;
-  }
+            _.forEach(sourceArea, function(spot) {
+                if (spot.type === "terrain" && spot.terrain !== "wall") {
+                    availableSpots++;
+                }
+            });
+
+            let optimalMiningSpot = PathFinder.search(origin, {pos: source.pos, range: 1}).path.pop();
+
+            if (!optimalMiningSpot) {
+
+                optimalMiningSpot = new RoomPosition(source.pos.x, source.pos.y, process.metaData.roomName);
+            }
+
+            room.memory.sources[source.id] = {
+                availableSpots,
+                id: source.id,
+                isMinedBy: {
+                    bootstrappers: 0,
+                    haulers: 0,
+                    miners: 0
+                },
+                optimalSpot: {x: optimalMiningSpot.x, y: optimalMiningSpot.y},
+                roomName: process.metaData.roomName,
+                x: source.pos.x,
+                y: source.pos.y
+            };
+        });
+
+        room.memory.builders = 0;
+        room.memory.upgraders = 0
+
+        this.markAsCompleted();
+    }
 }

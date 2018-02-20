@@ -10,6 +10,7 @@
     "noImplicitReturns": true,
     "allowSyntheticDefaultImports": true,
     "allowUnreachableCode": false,
+    "strictPropertyInitialization": false,
     "types": [
       "lodash",
       "typed-screeps",

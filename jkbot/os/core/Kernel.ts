@@ -1,48 +1,57 @@
-import { MessageLogItem, ProcessTable, ProcessTypes, RoomDataTable, SerializedProcess,
-  SerializedRoomData, SourceObjectInfo, SpawnObjectInfo } from "../../typings";
+import {BuildProcess} from "os/processes/creep-actions/BuildProcess";
+import {DepositProcess} from "os/processes/creep-actions/DepositProcess";
+import {HarvestProcess} from "os/processes/creep-actions/HarvestProcess";
+import {MineProcess} from "os/processes/creep-actions/MineProcess";
+import {MoveProcess} from "os/processes/creep-actions/MoveProcess";
+import {PickupProcess} from "os/processes/creep-actions/PickupProcess";
+import {UpgradeProcess} from "os/processes/creep-actions/UpgradeProcess";
+import {RepairProcess} from "os/processes/creep-actions/RepairProcess";
+import {WithdrawProcess} from "os/processes/creep-actions/WithdrawProcess";
 
-import { BuildProcess } from "os/processes/creep-actions/BuildProcess";
-import { DepositProcess } from "os/processes/creep-actions/DepositProcess";
-import { HarvestProcess } from "os/processes/creep-actions/HarvestProcess";
-import { MoveProcess } from "os/processes/creep-actions/MoveProcess";
-import { PickupProcess } from "os/processes/creep-actions/PickupProcess";
-import { UpgradeProcess } from "os/processes/creep-actions/UpgradeProcess";
+import {BootstrapperLifeCycleProcess} from "os/processes/life-cycles/BootstrapperLifeCycleProcess";
+import {BuilderLifeCycleProcess} from "os/processes/life-cycles/BuilderLifeCycleProcess";
+import {MinerLifeCycleProcess} from "os/processes/life-cycles/MinerLifeCycleProcess";
+import {UpgraderLifeCycleProcess} from "os/processes/life-cycles/UpgraderLifeCycleProcess";
 
-import { BuilderLifeCycleProcess } from "os/processes/life-cycles/BuilderLifeCycleProcess";
-import { HarvesterLifeCycleProcess } from "os/processes/life-cycles/HarvesterLifeCycleProcess";
+import {ConstructionManagerProcess} from "os/processes/room/ConstructionManagerProcess";
+import {EnergyManagementProcess} from "os/processes/room/EnergyManagerProcess";
+import {RoomSupervisorProcess} from "os/processes/room/RoomSupervisorProcess";
+import {SpawnManagerProcess} from "os/processes/room/SpawnManagerProcess";
+import {StaticRoomDataProcess} from "os/processes/room/StaticRoomDataProcess";
 
-import { ConstructionManagerProcess } from "os/processes/room/ConstructionManagerProcess";
-import { EnergyManagementProcess } from "os/processes/room/EnergyManagerProcess";
-import { RoomSupervisorProcess } from "os/processes/room/RoomSupervisorProcess";
-import { SpawnManagerProcess } from "os/processes/room/SpawnManagerProcess";
-import { StaticRoomDataProcess } from "os/processes/room/StaticRoomDataProcess";
-
-import { InitProcess } from "os/processes/system/InitProcess";
-import { MemoryManagerProcess } from "os/processes/system/MemoryManagerProcess";
-import { SuspensionProcess } from "os/processes/system/SuspensionProcess";
-
-import { RoomData } from "os/core/RoomData";
-import { Constants } from "./Constants";
-import { Process } from "./Process";
+import {InitProcess} from "os/processes/system/InitProcess";
+import {MemoryManagerProcess} from "os/processes/system/MemoryManagerProcess";
+import {SuspensionProcess} from "os/processes/system/SuspensionProcess";
+import {Constants} from "./Constants";
+import {Process} from "./Process";
 
 export const processTypes = {
-  build: BuildProcess,
-  builderLifeCycle: BuilderLifeCycleProcess,
-  constructionManager: ConstructionManagerProcess,
-  deposit: DepositProcess,
-  energyManager: EnergyManagementProcess,
-  harvest: HarvestProcess,
-  harvesterLifeCycle: HarvesterLifeCycleProcess,
-  init: InitProcess,
-  memoryManager: MemoryManagerProcess,
-  move: MoveProcess,
-  pickup: PickupProcess,
-  roomSupervisor: RoomSupervisorProcess,
-  spawnManager: SpawnManagerProcess,
-  staticRoomData: StaticRoomDataProcess,
-  suspension: SuspensionProcess,
-  upgrade: UpgradeProcess
+    bootstrapperLifeCycle: BootstrapperLifeCycleProcess,
+    build: BuildProcess,
+    builderLifeCycle: BuilderLifeCycleProcess,
+    constructionManager: ConstructionManagerProcess,
+    deposit: DepositProcess,
+    energyManager: EnergyManagementProcess,
+    harvest: HarvestProcess,
+    init: InitProcess,
+    memoryManager: MemoryManagerProcess,
+    mine: MineProcess,
+    minerLifeCycle: MinerLifeCycleProcess,
+    move: MoveProcess,
+    pickup: PickupProcess,
+    repair: RepairProcess,
+    roomSupervisor: RoomSupervisorProcess,
+    spawnManager: SpawnManagerProcess,
+    staticRoomData: StaticRoomDataProcess,
+    suspension: SuspensionProcess,
+    upgrade: UpgradeProcess,
+    upgraderLifeCycle: UpgraderLifeCycleProcess,
+    withdraw: WithdrawProcess
 } as { [type: string]: any };
+
+interface ProcessTable {
+    [name: string]: Process;
+}
 
 export class Kernel {
 
@@ -50,9 +59,7 @@ export class Kernel {
 
     public processTable: ProcessTable = {};
 
-    public roomDataTable: RoomDataTable = {};
-
-    private sortedProcesses: string[];
+    private sortedProcesses: string[] = [];
 
     private messageLog: MessageLogItem[] = [];
 
@@ -64,12 +71,12 @@ export class Kernel {
             Memory.jkbot = {};
         }
 
-        this.setCpuLimit();
+        this.log("init kernel", "running constructor");
+
+        this.cpuLimit = this.defineCpuLimit();
         this.loadProcessTable();
-        this.loadRoomDataTable();
 
         this.addProcess("init", "init", Constants.PRIORITY_FIRST, {});
-        this.addProcess("suspension", "suspension", Constants.PRIORITY_LAST, {});
     }
 
     /**
@@ -94,17 +101,16 @@ export class Kernel {
     }
 
     /**
-     * Sets the CPU limit for the kernel
+     * Defines the CPU limit for the kernel
      */
-    public setCpuLimit() {
+    public defineCpuLimit() {
 
         // Simulator has no limit
         if (Game.cpu.limit === undefined) {
-            this.cpuLimit = 1000;
-            return;
+            return 1000;
         }
 
-        this.cpuLimit = Game.cpu.tickLimit * 0.95;
+        return Game.cpu.tickLimit * 0.95;
     }
 
     /**
@@ -124,23 +130,12 @@ export class Kernel {
 
         _.forEach(Memory.jkbot.processTable, function(entry: any) {
             if (processTypes[entry.type]) {
-              kernel.processTable[entry.name] = new processTypes[entry.type](entry, kernel);
+                kernel.processTable[entry.name] = new processTypes[entry.type](entry, kernel);
             } else {
-              kernel.log("Load process table", "Tried loading process without type: " + entry.name, "error");
+                kernel.log("Load process table", "Tried loading process without type: " + entry.name, "error");
             }
         });
 
-    }
-
-    /**
-     * Loads the room data table from memory
-     */
-    public loadRoomDataTable() {
-      let kernel = this;
-
-      _.forEach(Memory.jkbot.roomDataTable, function(entry: SerializedRoomData) {
-          kernel.roomDataTable[entry.name] = new RoomData(entry);
-        });
     }
 
     /**
@@ -154,15 +149,6 @@ export class Kernel {
     }
 
     /**
-     * Checks if a given room already has data
-     * @param name
-     * @returns {boolean}
-     */
-    public hasRoomData(name: string) {
-      return (!!this.getRoomDataByName(name));
-    }
-
-    /**
      * Gets a process by name
      *
      * @param {string} name
@@ -172,14 +158,14 @@ export class Kernel {
         return this.processTable[name];
     }
 
-    /**
-     * Gets RoomData by room name
-     *
-     * @param {string} name
-     * @returns {RoomData}
-     */
-    public getRoomDataByName(name: string): RoomData {
-      return this.roomDataTable[name];
+    public getProcessByRoomAndType(room: string, type: string): Process | null {
+        let processName = type + "-" + room;
+
+        if (this.hasProcess(processName)) {
+            return this.processTable[processName];
+        } else {
+            return null;
+        }
     }
 
     /**
@@ -189,12 +175,12 @@ export class Kernel {
      */
     public getHighestPriorityProcess() {
         if (!this.sortedProcesses.length) {
-          let toRunProcesses = _.filter(this.processTable, function(entry: Process) {
-              return (!entry.hasAlreadyRun && entry.suspend === false );
-          });
+            let toRunProcesses = _.filter(this.processTable, function(entry: Process) {
+                return (!entry.hasAlreadyRun && entry.suspend === false );
+            });
 
-          let sorted = _.sortBy(toRunProcesses, "priority").reverse();
-          this.sortedProcesses = _.map(sorted, "name");
+            let sorted = _.sortBy(toRunProcesses, "priority").reverse();
+            this.sortedProcesses = _.map(sorted, "name");
         }
 
         let name = this.sortedProcesses.shift()!;
@@ -212,11 +198,10 @@ export class Kernel {
             try {
                 processToRun.run();
             } catch (e) {
-                this.log(processToRun.name, "ERROR: " + e, "error");
+                this.log(processToRun.name, "ERROR: " + e.message, "error");
+                this.log(processToRun.name, "STACK: " + e.stack, "error");
             }
         }
-
-        processToRun.cleanUp();
 
         this.log("Next process", "Finished process => " + processToRun.name, "debug");
 
@@ -236,16 +221,21 @@ export class Kernel {
 
         Memory.jkbot.processTable = processList;
 
-        let roomDataList: SerializedRoomData[] = [];
-        _.forEach(this.roomDataTable, function(entry: RoomData) {
-          entry.progressSpawns();
-          roomDataList.push(entry.serialize());
-        });
+        for (let name in Game.rooms) {
 
-        Memory.jkbot.roomDataTable = roomDataList;
+            let room = Game.rooms[name];
+
+            if (room && room.memory.spawns && room.memory.spawns.length) {
+                for (let spawnCount = 0; spawnCount < room.memory.spawns.length; spawnCount++) {
+                    if (room.memory.spawns[spawnCount].spawning > 0) {
+                        room.memory.spawns[spawnCount].spawning--;
+                    }
+                }
+            }
+
+        }
 
         this.log("Final", "Processes count: " + processList.length, "info");
-        this.log("Final", "Room data count: " + roomDataList.length, "info");
         this.log("Final", "total CPU used: " + Game.cpu.getUsed(), "info");
 
         console.log(this.buildMessageLogTable());
@@ -274,33 +264,6 @@ export class Kernel {
     }
 
     /**
-     * Adds a new RoomData entry to the table
-     *
-     * @param {string} name
-     * @param {SourceObjectInfo[]} sources
-     * @param {SpawnObjectInfo[]} spawns
-     * @param {number} rcl
-     */
-    public addRoomData(name: string, sources: SourceObjectInfo[], spawns: SpawnObjectInfo[], rcl: number) {
-      this.roomDataTable[name] = new RoomData({
-        builders: 0,
-        name,
-        rcl,
-        sources,
-        spawns
-      });
-    }
-
-    /**
-     * Updates the given roomdata object
-     *
-     * @param {RoomData} data
-     */
-    public updateRoomData(data: RoomData) {
-      this.roomDataTable[data.name] = data;
-    }
-
-    /**
      * Generates a table overview of all the current log messages and clears them out
      *
      * @returns {string}
@@ -311,42 +274,42 @@ export class Kernel {
         output += "<table cellpadding='4'>";
 
         output +=
-                "<tr>" +
-                "   <th>Tick</th>" +
-                "   <th>Process</th>" +
-                "   <th>Message</th>" +
-                "   <th>CPU</th>" +
-                "</tr>";
+            "<tr>" +
+            "   <th>Tick</th>" +
+            "   <th>Process</th>" +
+            "   <th>Message</th>" +
+            "   <th>CPU</th>" +
+            "</tr>";
 
         _.forEach(this.messageLog, function(entry: MessageLogItem) {
 
-          if (!Memory.jkbot.debug && entry.type === "debug") {
-            return;
-          }
+            if (!Memory.jkbot.debug && entry.type === "debug") {
+                return;
+            }
 
-          let color = "";
-          switch (entry.type) {
-              case "debug":
-                  color = "#e4e4e4";
-                  break;
-              case "error":
-                  color = "#FF4500";
-                  break;
-              case "info":
-                  color = "green";
-                  break;
-              default:
-                  color = "#ffffff";
-                  break;
-          }
+            let color = "";
+            switch (entry.type) {
+                case "debug":
+                    color = "#e4e4e4";
+                    break;
+                case "error":
+                    color = "#FF4500";
+                    break;
+                case "info":
+                    color = "green";
+                    break;
+                default:
+                    color = "#ffffff";
+                    break;
+            }
 
-          output +=
-              "<tr style='color: " + color + ";'>" +
-              "   <td> " + Game.time + " </td>" +
-              "   <td> " + entry.processName + " </td>" +
-              "   <td> " + entry.message + " </td>" +
-              "   <td> " + entry.cpu + " </td>" +
-              "</tr>";
+            output +=
+                "<tr style='color: " + color + ";'>" +
+                "   <td> " + Game.time + " </td>" +
+                "   <td> " + entry.processName + " </td>" +
+                "   <td> " + entry.message + " </td>" +
+                "   <td> " + entry.cpu + " </td>" +
+                "</tr>";
         });
 
         output += "</table>";
@@ -354,6 +317,22 @@ export class Kernel {
         this.messageLog = [];
 
         return output;
+    }
+
+    /**
+     * Returns the spawn maanger process for a given room
+     *
+     * @param {string} roomName
+     * @returns {SpawnManagerProcess | any}
+     */
+    public getSpawnManagerForRoom(roomName: string): SpawnManagerProcess | false {
+        let processName = "spawnManager-" + roomName;
+
+        if (this.hasProcess(processName)) {
+            return this.processTable[processName] as SpawnManagerProcess;
+        } else {
+            return false;
+        }
     }
 
 }

@@ -1,9 +1,4 @@
-import { MetaData, ProcessTypes, SerializedProcess } from "../../typings";
-
-import { Constants } from "./Constants";
-import { Kernel } from "./Kernel";
-import { RoomData } from "os/core/RoomData";
-import { debug } from "util";
+import {Kernel} from "./Kernel";
 
 export abstract class Process {
     public completed: boolean = false;
@@ -24,8 +19,6 @@ export abstract class Process {
 
     public hasAlreadyRun: boolean;
 
-    protected roomData: RoomData | false;
-
     /**
      * Sets up a new Process object
      *
@@ -37,20 +30,14 @@ export abstract class Process {
 
         this.name = entry.name;
         this.priority = entry.priority;
-        this.metaData = entry.metaData;
         this.suspend = entry.suspend;
         this.hasAlreadyRun = false;
+
+        this.setMetaData(entry.metaData);
 
         if (entry.parent !== "") {
             this.parent = this.kernel.getProcessByName(entry.parent);
         }
-
-        if (this.metaData.roomName) {
-          this.roomData = this.getRoomData(this.metaData.roomName);
-        } else {
-          this.roomData = false;
-        }
-
     }
 
     /**
@@ -105,7 +92,7 @@ export abstract class Process {
      * @param meta
      * @param {boolean} suspendParent
      */
-    public spawnChildProcess<T extends ProcessTypes>(processType: T, name: string, priority: number, meta: any, suspendParent: boolean = false) {
+    protected spawnChildProcess<T extends ProcessTypes>(processType: T, name: string, priority: number, meta: any, suspendParent: boolean = false) {
         this.kernel.addProcess(processType, name, priority, meta, this.name);
 
         if (suspendParent) {
@@ -119,31 +106,24 @@ export abstract class Process {
      * @param {string} message
      * @param {string} type
      */
-    public log(message: string, type = "debug") {
+    protected log(message: string, type = "debug") {
         this.kernel.log(this.name, message, type);
     }
 
+    protected setMetaData(meta: object) {
+        this.metaData = meta;
+    }
+
     /**
-     * Grabs RoomData from the kernel
+     * Marks the current process as completed and (optionally) resumes the parent
      *
-     * @param {string} name
-     * @returns {RoomData}
+     * @param {boolean} resumeParent
      */
-    public getRoomData(name: string): RoomData {
-      return this.kernel.getRoomDataByName(name);
-    }
+    protected markAsCompleted(resumeParent: boolean = true) {
+        this.completed = true;
 
-    public ensureRoomDataExists() {
-      if (!this.roomData) {
-        this.roomData = this.getRoomData(this.metaData.roomName);
-      }
-
-      return this.roomData;
-    }
-
-    public cleanUp(): void {
-      if (this.roomData) {
-        this.kernel.updateRoomData(this.roomData);
-      }
+        if (resumeParent) {
+            this.resumeParent();
+        }
     }
 }

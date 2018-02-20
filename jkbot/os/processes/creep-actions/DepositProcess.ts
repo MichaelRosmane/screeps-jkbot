@@ -1,33 +1,36 @@
-import { CreepActionProcess } from "os/core/CreepActionProcess";
-import { MetaData } from "typings";
+import {isCreepAlive} from "@open-screeps/is-creep-alive";
+import {CreepActionProcess} from "os/processes/CreepActionProcess";
+import {Constants} from "../../core/Constants";
 
 export class DepositProcess extends CreepActionProcess {
-  public type = "deposit";
+    public type = "deposit";
 
-  public metaData: MetaData["deposit"];
+    public metaData: MetaData["deposit"];
 
-  public run(): void {
+    public run(): void {
 
-    let creep = Game.creeps[this.metaData.creepName];
-    let dropOffInfo = this.metaData.dropOff;
-
-    if (!creep) {
-        this.markAsCompleted();
-        return;
-    }
-
-    if (!dropOffInfo) {
-      this.log("Invalid drop off point set", "error");
-      this.markAsCompleted();
-    } else {
-        let dropOff: Structure | null = Game.getObjectById(dropOffInfo.id);
-
-        if (dropOff) {
-          creep.transfer(dropOff, RESOURCE_ENERGY);
+        if (!isCreepAlive(this.metaData.creepName)) {
+            this.markAsCompleted();
+            return;
         }
+
+        let creep = Game.creeps[this.metaData.creepName];
+
+        creep.say(Constants.CREEP_SAY_DEPOSITING);
+
+        let dropOffInfo = creep.memory.target;
+
+        if (!dropOffInfo) {
+            this.log("Invalid drop off point set", "error");
+            this.markAsCompleted();
+        } else {
+            let dropOff: Structure | null = Game.getObjectById(dropOffInfo.id);
+
+            if (dropOff) {
+                creep.transfer(dropOff, RESOURCE_ENERGY);
+            }
+        }
+
+        this.markAsCompleted();
     }
-
-    this.markAsCompleted();
-  }
-
 }

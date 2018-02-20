@@ -1,35 +1,41 @@
-import { CreepActionProcess } from "os/core/CreepActionProcess";
-import { MetaData } from "typings";
+import {CreepActionProcess} from "os/processes/CreepActionProcess";
+import {Constants} from "os/core/Constants";
+import {isCreepAlive} from "@open-screeps/is-creep-alive";
 
 export class PickupProcess extends CreepActionProcess {
-  public type = "pickup";
+    public type = "pickup";
 
-  public metaData: MetaData["pickup"];
+    public metaData: MetaData["pickup"];
 
-  public run(): void {
+    public run(): void {
 
-    let creep = Game.creeps[this.metaData.creepName];
-    let target = this.metaData.target;
+        if (!isCreepAlive(this.metaData.creepName)) {
+            this.markAsCompleted();
+            return;
+        }
 
-    if (!creep) {
-        this.markAsCompleted();
-        return;
-    }
+        let creep = Game.creeps[this.metaData.creepName];
+        let target = creep.memory.target;
 
-    if (!target) {
-      this.log("Invalid target point set", "error");
-      this.markAsCompleted();
-    } else {
-        let targetStructure: Structure | null = Game.getObjectById(target.id);
 
-        if (targetStructure) {
+        if (!target) {
+            this.markAsCompleted();
+            return;
+        }
 
-          let result = creep.withdraw(targetStructure, RESOURCE_ENERGY);
-          this.log("trying to withdraw: " + result, "error");
+        creep.say(Constants.CREEP_SAY_PICKUP);
+
+        let targetResource: Resource | null = Game.getObjectById(target.id);
+
+        if (targetResource) {
+            creep.pickup(targetResource);
+        } else {
+            this.markAsCompleted();
+        }
+
+        if (_.sum(creep.carry) === creep.carryCapacity) {
+            this.markAsCompleted();
         }
     }
-
-    this.markAsCompleted();
-  }
 
 }
